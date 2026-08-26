@@ -7,24 +7,45 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 
 const expected = [
   "rappi_add_to_cart",
+  "rappi_browse_catalog",
+  "rappi_browse_stores",
+  "rappi_cancel_order",
   "rappi_capabilities",
+  "rappi_checkout_preview",
   "rappi_clear_cart",
   "rappi_connection_status",
+  "rappi_create_address",
+  "rappi_delete_address",
+  "rappi_geocode_address",
   "rappi_get_cart",
   "rappi_get_order",
+  "rappi_get_order_eta",
+  "rappi_get_order_invoice",
+  "rappi_get_order_receipt",
+  "rappi_get_order_status",
   "rappi_get_store",
+  "rappi_home",
+  "rappi_home_feed",
+  "rappi_list_active_orders",
   "rappi_list_addresses",
+  "rappi_list_coupons",
   "rappi_list_orders",
   "rappi_list_payment_methods",
   "rappi_logout",
   "rappi_place_order",
   "rappi_privacy_audit",
+  "rappi_rate_order",
+  "rappi_recent_searches",
+  "rappi_reorder",
   "rappi_search_products",
   "rappi_search_stores",
   "rappi_set_active_address",
   "rappi_set_payment_method",
+  "rappi_tip_order",
   "rappi_track_order",
-  "rappi_update_cart_item"
+  "rappi_update_address",
+  "rappi_update_cart_item",
+  "rappi_web_cart"
 ];
 
 const homeDir = mkdtempSync(join(tmpdir(), "rappi-mcp-smoke-"));
@@ -53,7 +74,13 @@ try {
     "rappi_get_order",
     "rappi_list_payment_methods",
     "rappi_get_store",
-    "rappi_track_order"
+    "rappi_track_order",
+    "rappi_list_coupons",
+    "rappi_list_active_orders",
+    "rappi_checkout_preview",
+    "rappi_home",
+    "rappi_reorder",
+    "rappi_cancel_order"
   ]) {
     assert.ok(names.includes(need), `missing ${need}`);
   }

@@ -43,6 +43,19 @@ export interface PlaceOrderInput {
   notes?: string;
 }
 
+export interface AddressWriteInput {
+  id?: string;
+  latitude: number;
+  longitude: number;
+  address: string;
+  street?: string;
+  number?: string;
+  city?: string;
+  tag?: string;
+  description?: string;
+  active?: boolean;
+}
+
 export function consumerHeaders(origin: string, deviceId: string): Record<string, string> {
   return {
     accept: "application/json",
@@ -134,10 +147,33 @@ export class RappiClient {
   }
 
   async setActiveAddress(addressId: string): Promise<unknown> {
-    return this.requestJson("PUT", `${PATHS.addresses}/${encodeURIComponent(addressId)}/select`, {
+    // Live PUT .../addresses/:id/select is 404 HTML. Singular PUT /address/:id is 401 (path exists).
+    return this.requestJson("PUT", `${PATHS.address}/${encodeURIComponent(addressId)}`, {
       auth: true,
-      body: { address_id: addressId }
+      body: { id: addressId, active: true }
     });
+  }
+
+  async geocodeAddress(latitude: number, longitude: number): Promise<unknown> {
+    return this.requestJson("GET", PATHS.address, {
+      auth: true,
+      query: { lat: latitude, lng: longitude }
+    });
+  }
+
+  async createAddress(input: AddressWriteInput): Promise<unknown> {
+    return this.requestJson("POST", PATHS.address, { auth: true, body: addressBody(input) });
+  }
+
+  async updateAddress(input: AddressWriteInput & { id: string }): Promise<unknown> {
+    return this.requestJson("PUT", `${PATHS.address}/${encodeURIComponent(input.id)}`, {
+      auth: true,
+      body: addressBody(input)
+    });
+  }
+
+  async deleteAddress(addressId: string): Promise<unknown> {
+    return this.requestJson("DELETE", `${PATHS.address}/${encodeURIComponent(addressId)}`, { auth: true });
   }
 
   async listOrders(): Promise<unknown> {
@@ -158,6 +194,96 @@ export class RappiClient {
 
   async trackOrder(orderId: string): Promise<unknown> {
     return this.requestJson("GET", `${PATHS.orders}/${encodeURIComponent(orderId)}/tracking`, { auth: true });
+  }
+
+  async getOrderEta(orderId: string): Promise<unknown> {
+    return this.requestJson("GET", `${PATHS.orders}/${encodeURIComponent(orderId)}/eta`, { auth: true });
+  }
+
+  async getOrderReceipt(orderId: string): Promise<unknown> {
+    return this.requestJson("GET", `${PATHS.orders}/${encodeURIComponent(orderId)}/receipt`, { auth: true });
+  }
+
+  async getOrderInvoice(orderId: string): Promise<unknown> {
+    return this.requestJson("GET", `${PATHS.orders}/${encodeURIComponent(orderId)}/invoice`, { auth: true });
+  }
+
+  async getOrderStatus(orderId: string): Promise<unknown> {
+    return this.requestJson("GET", `${PATHS.orderStatus}/${encodeURIComponent(orderId)}`, { auth: true });
+  }
+
+  async listActiveOrders(): Promise<unknown> {
+    return this.requestJson("GET", `${PATHS.orders}/active`, { auth: true });
+  }
+
+  async listInProgressOrders(): Promise<unknown> {
+    return this.requestJson("GET", PATHS.ordersInProgress, { auth: true });
+  }
+
+  async listCoupons(): Promise<unknown> {
+    return this.requestJson("GET", PATHS.coupons, { auth: true });
+  }
+
+  async checkoutPreview(input: { address_id?: string; payment_method_id?: string } = {}): Promise<unknown> {
+    return this.requestJson("POST", PATHS.checkoutPreview, { auth: true, body: input });
+  }
+
+  async home(): Promise<unknown> {
+    return this.requestJson("GET", PATHS.home, { auth: true });
+  }
+
+  async homeFeed(): Promise<unknown> {
+    return this.requestJson("GET", PATHS.homeFeed, { auth: true });
+  }
+
+  async browseStores(): Promise<unknown> {
+    return this.requestJson("GET", PATHS.webStores, { auth: true });
+  }
+
+  async webCart(): Promise<unknown> {
+    return this.requestJson("GET", PATHS.webCart, { auth: true });
+  }
+
+  async browseCatalog(input: SearchInput): Promise<unknown> {
+    return this.requestJson("POST", PATHS.catalog, {
+      auth: "optional",
+      body: { lat: input.latitude, lng: input.longitude, limit: input.limit ?? 20 }
+    });
+  }
+
+  async recentSearches(input: SearchInput): Promise<unknown> {
+    return this.requestJson("POST", PATHS.recentSearches, {
+      auth: "optional",
+      body: { lat: input.latitude, lng: input.longitude }
+    });
+  }
+
+  async reorder(orderId: string): Promise<unknown> {
+    return this.requestJson("POST", `${PATHS.orders}/${encodeURIComponent(orderId)}/reorder`, {
+      auth: true,
+      body: { order_id: orderId }
+    });
+  }
+
+  async cancelOrder(orderId: string): Promise<unknown> {
+    return this.requestJson("POST", `${PATHS.orders}/${encodeURIComponent(orderId)}/cancel`, {
+      auth: true,
+      body: { order_id: orderId }
+    });
+  }
+
+  async rateOrder(orderId: string, score: number, comment?: string): Promise<unknown> {
+    return this.requestJson("POST", `${PATHS.orders}/${encodeURIComponent(orderId)}/rate`, {
+      auth: true,
+      body: { order_id: orderId, score, comment }
+    });
+  }
+
+  async tipOrder(orderId: string, tip: number): Promise<unknown> {
+    return this.requestJson("POST", `${PATHS.orders}/${encodeURIComponent(orderId)}/tip`, {
+      auth: true,
+      body: { order_id: orderId, tip }
+    });
   }
 
   async setPaymentMethod(paymentMethodId: string): Promise<unknown> {
@@ -192,11 +318,20 @@ export class RappiClient {
     options: {
       auth: boolean | "optional";
       body?: unknown;
+      query?: Record<string, string | number | undefined>;
       extraHeaders?: Record<string, string>;
       deviceId?: string;
     }
   ): Promise<unknown> {
-    const url = consumerRequestUrl(this.config.apiBase, path);
+    let url = consumerRequestUrl(this.config.apiBase, path);
+    if (options.query) {
+      const qs = new URLSearchParams();
+      for (const [key, value] of Object.entries(options.query)) {
+        if (value !== undefined && value !== "") qs.set(key, String(value));
+      }
+      const encoded = qs.toString();
+      if (encoded) url += `?${encoded}`;
+    }
     const deviceId = options.deviceId ?? (await this.deviceId());
     const headers: Record<string, string> = {
       ...consumerHeaders(this.config.origin, deviceId),
@@ -270,6 +405,23 @@ export function consumerRequestUrl(apiBase: string, path: string): string {
     throw new RappiClientError((error as Error).message, undefined, "PATH_NOT_ALLOWED");
   }
   return apiBase.replace(/\/$/, "") + path;
+}
+
+function addressBody(input: AddressWriteInput): Record<string, unknown> {
+  return {
+    id: input.id,
+    lat: input.latitude,
+    lng: input.longitude,
+    latitude: input.latitude,
+    longitude: input.longitude,
+    address: input.address,
+    street: input.street,
+    number: input.number,
+    city: input.city,
+    tag: input.tag,
+    description: input.description,
+    active: input.active ?? true
+  };
 }
 
 function unifiedSearchBody(input: SearchInput, kind: "stores" | "products"): Record<string, unknown> {

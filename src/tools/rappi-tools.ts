@@ -1,37 +1,65 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
+  AddressCreateInputSchema,
+  AddressUpdateInputSchema,
   AddressWriteInputSchema,
   CartWriteInputSchema,
+  CheckoutPreviewInputSchema,
   ClearCartInputSchema,
+  GeoInputSchema,
   LogoutInputSchema,
   OrderIdInputSchema,
+  OrderWriteInputSchema,
   PaymentWriteInputSchema,
   PlaceOrderInputSchema,
+  RateOrderInputSchema,
   ReadInputSchema,
   ResponseOnlyInputSchema,
   SearchInputSchema,
-  StoreIdInputSchema
+  StoreIdInputSchema,
+  TipOrderInputSchema
 } from "../schemas/common.js";
 import {
   handleAddToCart,
+  handleBrowseCatalog,
+  handleBrowseStores,
+  handleCancelOrder,
   handleCapabilities,
+  handleCheckoutPreview,
   handleClearCart,
   handleConnectionStatus,
+  handleCreateAddress,
+  handleDeleteAddress,
+  handleGeocodeAddress,
   handleGetCart,
   handleGetOrder,
+  handleGetOrderEta,
+  handleGetOrderInvoice,
+  handleGetOrderReceipt,
+  handleGetOrderStatus,
   handleGetStore,
+  handleHome,
+  handleHomeFeed,
+  handleListActiveOrders,
   handleListAddresses,
+  handleListCoupons,
   handleListOrders,
   handleListPaymentMethods,
   handleLogout,
   handlePlaceOrder,
   handlePrivacyAudit,
+  handleRateOrder,
+  handleRecentSearches,
+  handleReorder,
   handleSearchProducts,
   handleSearchStores,
   handleSetActiveAddress,
   handleSetPaymentMethod,
+  handleTipOrder,
   handleTrackOrder,
-  handleUpdateCartItem
+  handleUpdateAddress,
+  handleUpdateCartItem,
+  handleWebCart
 } from "../services/handlers.js";
 
 const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true } as const;
@@ -238,6 +266,238 @@ export function registerRappiTools(server: McpServer): void {
       annotations: gatedWrite
     },
     async (args) => handlePlaceOrder(args)
+  );
+
+  server.registerTool(
+    "rappi_geocode_address",
+    {
+      title: "Geocode Rappi address",
+      description: "Resolve a lat/lng against unofficial users-address/address. Read-only. Street redacted by default.",
+      inputSchema: GeoInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleGeocodeAddress(args)
+  );
+
+  server.registerTool(
+    "rappi_create_address",
+    {
+      title: "Create Rappi address",
+      description: "Save a delivery address. Requires explicit_user_intent. Does not place an order.",
+      inputSchema: AddressCreateInputSchema.shape,
+      annotations: gatedWrite
+    },
+    async (args) => handleCreateAddress(args)
+  );
+
+  server.registerTool(
+    "rappi_update_address",
+    {
+      title: "Update Rappi address",
+      description: "Update a saved address. Requires explicit_user_intent.",
+      inputSchema: AddressUpdateInputSchema.shape,
+      annotations: gatedWrite
+    },
+    async (args) => handleUpdateAddress(args)
+  );
+
+  server.registerTool(
+    "rappi_delete_address",
+    {
+      title: "Delete Rappi address",
+      description: "Delete a saved address. Requires explicit_user_intent.",
+      inputSchema: AddressWriteInputSchema.shape,
+      annotations: gatedWrite
+    },
+    async (args) => handleDeleteAddress(args)
+  );
+
+  server.registerTool(
+    "rappi_list_active_orders",
+    {
+      title: "List active Rappi orders",
+      description: "In-flight / active orders plus in-progress (unofficial user-order-home). Read-only.",
+      inputSchema: ReadInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleListActiveOrders(args)
+  );
+
+  server.registerTool(
+    "rappi_get_order_eta",
+    {
+      title: "Get Rappi order ETA",
+      description: "ETA for one order. Read-only.",
+      inputSchema: OrderIdInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleGetOrderEta(args)
+  );
+
+  server.registerTool(
+    "rappi_get_order_receipt",
+    {
+      title: "Get Rappi order receipt",
+      description: "Receipt for one order. Identity redacted by default. Read-only.",
+      inputSchema: OrderIdInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleGetOrderReceipt(args)
+  );
+
+  server.registerTool(
+    "rappi_get_order_invoice",
+    {
+      title: "Get Rappi order invoice",
+      description: "Invoice for one order. Identity redacted by default. Read-only.",
+      inputSchema: OrderIdInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleGetOrderInvoice(args)
+  );
+
+  server.registerTool(
+    "rappi_get_order_status",
+    {
+      title: "Get Rappi order status",
+      description: "Courier/order-status surface for one order. Read-only.",
+      inputSchema: OrderIdInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleGetOrderStatus(args)
+  );
+
+  server.registerTool(
+    "rappi_list_coupons",
+    {
+      title: "List Rappi coupons",
+      description: "Wallet coupons on unofficial user-order-home. Read-only. Does not apply a coupon.",
+      inputSchema: ReadInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleListCoupons(args)
+  );
+
+  server.registerTool(
+    "rappi_checkout_preview",
+    {
+      title: "Preview Rappi checkout",
+      description: "Totals preview. Does not charge. Read-only.",
+      inputSchema: CheckoutPreviewInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleCheckoutPreview(args)
+  );
+
+  server.registerTool(
+    "rappi_home",
+    {
+      title: "Rappi home",
+      description: "Web home for the logged-in consumer. Read-only.",
+      inputSchema: ReadInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleHome(args)
+  );
+
+  server.registerTool(
+    "rappi_home_feed",
+    {
+      title: "Rappi home feed",
+      description: "Dynamic home feed (web-gateway). Read-only.",
+      inputSchema: ReadInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleHomeFeed(args)
+  );
+
+  server.registerTool(
+    "rappi_browse_stores",
+    {
+      title: "Browse Rappi stores (web)",
+      description: "Web-gateway store list. Read-only. Complements rappi_search_stores.",
+      inputSchema: ReadInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleBrowseStores(args)
+  );
+
+  server.registerTool(
+    "rappi_browse_catalog",
+    {
+      title: "Browse Rappi catalog",
+      description: "Nearby store catalog (restaurant-bus). Read-only. Optional lat/lng.",
+      inputSchema: SearchInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleBrowseCatalog(args)
+  );
+
+  server.registerTool(
+    "rappi_recent_searches",
+    {
+      title: "Rappi recent searches",
+      description: "Recent/top searches near a point. Read-only.",
+      inputSchema: GeoInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleRecentSearches(args)
+  );
+
+  server.registerTool(
+    "rappi_web_cart",
+    {
+      title: "Get Rappi web cart",
+      description: "Alternate cart inspect via web-gateway. Street/phone/email/last-four redacted. Read-only.",
+      inputSchema: ReadInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleWebCart(args)
+  );
+
+  server.registerTool(
+    "rappi_reorder",
+    {
+      title: "Reorder a Rappi order",
+      description: "Rebuilds the cart from a past order. Gated cart write. Does not checkout.",
+      inputSchema: OrderWriteInputSchema.shape,
+      annotations: gatedWrite
+    },
+    async (args) => handleReorder(args)
+  );
+
+  server.registerTool(
+    "rappi_cancel_order",
+    {
+      title: "Cancel Rappi order",
+      description:
+        "Gated. May refund. Requires mutations and explicit_user_intent. Guest tokens rejected.",
+      inputSchema: OrderWriteInputSchema.shape,
+      annotations: gatedWrite
+    },
+    async (args) => handleCancelOrder(args)
+  );
+
+  server.registerTool(
+    "rappi_rate_order",
+    {
+      title: "Rate Rappi order",
+      description: "Requires explicit_user_intent. Does not charge.",
+      inputSchema: RateOrderInputSchema.shape,
+      annotations: gatedWrite
+    },
+    async (args) => handleRateOrder(args)
+  );
+
+  server.registerTool(
+    "rappi_tip_order",
+    {
+      title: "Tip a Rappi order",
+      description: "FAIL-CLOSED. Charges a tip. Requires mutations, explicit_user_intent, and a personal token.",
+      inputSchema: TipOrderInputSchema.shape,
+      annotations: gatedWrite
+    },
+    async (args) => handleTipOrder(args)
   );
 
   server.registerTool(

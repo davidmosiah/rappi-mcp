@@ -64,3 +64,17 @@ export function assertNotGuestForCharge(source: string | undefined): void {
     );
   }
 }
+
+export function assertCancelOrderAllowed(input: GateInput): void {
+  assertMutationsEnabled(input.allowMutations, "cancel a Rappi order");
+  assertExplicitIntent(input.explicitUserIntent, "cancel a Rappi order");
+}
+
+export function assertTipAllowed(input: GateInput): void {
+  assertMutationsEnabled(input.allowMutations, "add a tip on Rappi");
+  assertExplicitIntent(input.explicitUserIntent, "add a tip on Rappi");
+}
+
+export function assertReorderAllowed(input: GateInput): void {
+  assertCartWriteAllowed(input);
+}

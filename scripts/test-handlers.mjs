@@ -7,9 +7,13 @@ import { RappiClient } from "../dist/services/rappi-client.js";
 import { peekConfig } from "../dist/services/config.js";
 import {
   handleAddToCart,
+  handleCancelOrder,
+  handleCreateAddress,
   handleLogout,
   handlePlaceOrder,
-  handleSetPaymentMethod
+  handleReorder,
+  handleSetPaymentMethod,
+  handleTipOrder
 } from "../dist/services/handlers.js";
 
 let fetches = 0;
@@ -105,5 +109,43 @@ const guestPaymentWrite = await handleSetPaymentMethod(
 assert.equal(guestPaymentWrite.isError, true);
 assert.match(JSON.stringify(guestPaymentWrite.structuredContent), /guest/i);
 assert.equal(fetches, 0, "guest payment write must not hit Rappi");
+
+fetches = 0;
+const deniedReorder = await handleReorder(
+  { order_id: "order-1", response_format: "json" },
+  { client, tokens, allowMutations: false, fetchImpl }
+);
+assert.equal(deniedReorder.isError, true);
+assert.equal(fetches, 0);
+
+fetches = 0;
+const deniedCancel = await handleCancelOrder(
+  { order_id: "order-1", explicit_user_intent: true, response_format: "json" },
+  { client, tokens, allowMutations: false, fetchImpl }
+);
+assert.equal(deniedCancel.isError, true);
+assert.equal(fetches, 0);
+
+fetches = 0;
+const guestTip = await handleTipOrder(
+  { order_id: "order-1", tip: 5, explicit_user_intent: true, response_format: "json" },
+  { client: guestClient, tokens: guestTokens, allowMutations: true, fetchImpl }
+);
+assert.equal(guestTip.isError, true);
+assert.match(JSON.stringify(guestTip.structuredContent), /guest/i);
+assert.equal(fetches, 0);
+
+fetches = 0;
+const deniedAddress = await handleCreateAddress(
+  {
+    latitude: -3.73,
+    longitude: -38.52,
+    address: "Rua Teste 1",
+    response_format: "json"
+  },
+  { client, tokens, fetchImpl }
+);
+assert.equal(deniedAddress.isError, true);
+assert.equal(fetches, 0);
 
 console.log(JSON.stringify({ ok: true, suite: "handlers", fetches }, null, 2));

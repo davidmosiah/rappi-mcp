@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import {
   MutationGateError,
+  assertCancelOrderAllowed,
   assertCartWriteAllowed,
   assertLogoutAllowed,
   assertNotGuestForCharge,
   assertPaymentWriteAllowed,
-  assertPlaceOrderAllowed
+  assertPlaceOrderAllowed,
+  assertReorderAllowed,
+  assertTipAllowed
 } from "../dist/services/mutation-gate.js";
 
 function throws(fn, re) {
@@ -28,5 +31,8 @@ throws(() => assertPaymentWriteAllowed({ allowMutations: true, explicitUserInten
 throws(() => assertLogoutAllowed(false), /explicit_user_intent/);
 assertLogoutAllowed(true);
 throws(() => assertNotGuestForCharge("guest"), /guest token cannot place orders/i);
+throws(() => assertCancelOrderAllowed({ allowMutations: false, explicitUserIntent: true }), /RAPPI_ALLOW_MUTATIONS/);
+throws(() => assertTipAllowed({ allowMutations: true, explicitUserIntent: false }), /explicit_user_intent/);
+throws(() => assertReorderAllowed({ allowMutations: false, explicitUserIntent: true }), /RAPPI_ALLOW_MUTATIONS/);
 
 console.log(JSON.stringify({ ok: true, suite: "mutation-gate" }, null, 2));

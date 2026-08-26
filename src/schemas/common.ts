@@ -76,3 +76,66 @@ export const PlaceOrderInputSchema = z.object({
   explicit_user_intent: Intent,
   response_format: ResponseFormatSchema
 }).strict();
+
+export const GeoInputSchema = z.object({
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  privacy_mode: PrivacyModeSchema,
+  response_format: ResponseFormatSchema
+}).strict();
+
+export const AddressCreateInputSchema = z.object({
+  latitude: z.number(),
+  longitude: z.number(),
+  address: z.string().min(1).max(400),
+  street: z.string().max(200).optional(),
+  number: z.string().max(20).optional(),
+  city: z.string().max(120).optional(),
+  tag: z.string().max(40).optional(),
+  description: z.string().max(200).optional(),
+  explicit_user_intent: Intent,
+  response_format: ResponseFormatSchema
+}).strict();
+
+export const AddressUpdateInputSchema = z.object({
+  address_id: z.string().min(1),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  address: z.string().max(400).optional(),
+  street: z.string().max(200).optional(),
+  number: z.string().max(20).optional(),
+  city: z.string().max(120).optional(),
+  tag: z.string().max(40).optional(),
+  description: z.string().max(200).optional(),
+  active: z.boolean().optional(),
+  explicit_user_intent: Intent,
+  response_format: ResponseFormatSchema
+}).strict();
+
+export const RateOrderInputSchema = z.object({
+  order_id: z.string().min(1),
+  score: z.number().int().min(1).max(5),
+  comment: z.string().max(280).optional(),
+  explicit_user_intent: Intent,
+  response_format: ResponseFormatSchema
+}).strict();
+
+export const TipOrderInputSchema = z.object({
+  order_id: z.string().min(1),
+  tip: z.number().min(0).max(500),
+  explicit_user_intent: Intent,
+  response_format: ResponseFormatSchema
+}).strict();
+
+export const OrderWriteInputSchema = z.object({
+  order_id: z.string().min(1),
+  explicit_user_intent: Intent,
+  response_format: ResponseFormatSchema
+}).strict();
+
+export const CheckoutPreviewInputSchema = z.object({
+  address_id: z.string().min(1).optional(),
+  payment_method_id: z.string().min(1).optional(),
+  privacy_mode: PrivacyModeSchema,
+  response_format: ResponseFormatSchema
+}).strict();

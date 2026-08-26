@@ -4,7 +4,8 @@
 
 | Tool | `RAPPI_ALLOW_MUTATIONS` | `explicit_user_intent` | Guest token |
 | --- | --- | --- | --- |
-| place-order / payment write | required | required | rejected |
-| cart add/update/clear | required | required | allowed (still no checkout) |
-| address select | no | required | allowed |
+| place-order / payment write / cancel / tip | required | required | rejected |
+| cart add/update/clear / reorder | required | required | allowed (still no checkout) |
+| address create/update/delete/select | no | required | allowed |
+| rate order | no | required | allowed |
 | logout | no | required | allowed |

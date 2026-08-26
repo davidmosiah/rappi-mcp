@@ -54,6 +54,21 @@ await client.listOrders();
 await client.listPaymentMethods();
 await client.getStore("store-1");
 await client.trackOrder("order-1");
+await client.getOrderEta("order-1");
+await client.getOrderReceipt("order-1");
+await client.getOrderInvoice("order-1");
+await client.getOrderStatus("order-1");
+await client.listActiveOrders();
+await client.listInProgressOrders();
+await client.listCoupons();
+await client.checkoutPreview({ address_id: "addr-1" });
+await client.home();
+await client.homeFeed();
+await client.browseStores();
+await client.webCart();
+await client.browseCatalog({ latitude: -3.7, longitude: -38.5 });
+await client.recentSearches({ latitude: -3.7, longitude: -38.5 });
+await client.geocodeAddress(-3.7, -38.5);
 
 function hit(suffix, method) {
   return captured.find((row) => row.url === `${config.apiBase}${suffix}` && row.method === method);
@@ -72,6 +87,24 @@ assert.ok(
 assert.ok(
   hit(`${PATHS.orders}/order-1/tracking`, "GET"),
   `tracking must GET ${PATHS.orders}/:id/tracking`
+);
+assert.ok(hit(`${PATHS.orders}/order-1/eta`, "GET"), "eta path");
+assert.ok(hit(`${PATHS.orders}/order-1/receipt`, "GET"), "receipt path");
+assert.ok(hit(`${PATHS.orders}/order-1/invoice`, "GET"), "invoice path");
+assert.ok(hit(`${PATHS.orderStatus}/order-1`, "GET"), "order-status path");
+assert.ok(hit(`${PATHS.orders}/active`, "GET"), "active orders");
+assert.ok(hit(PATHS.ordersInProgress, "GET"), "in-progress orders");
+assert.ok(hit(PATHS.coupons, "GET"), "coupons");
+assert.ok(hit(PATHS.checkoutPreview, "POST"), "checkout preview POST");
+assert.ok(hit(PATHS.home, "GET"), "home");
+assert.ok(hit(PATHS.homeFeed, "GET"), "home feed");
+assert.ok(hit(PATHS.webStores, "GET"), "web stores");
+assert.ok(hit(PATHS.webCart, "GET"), "web cart");
+assert.ok(hit(PATHS.catalog, "POST"), "restaurant-bus catalog POST");
+assert.ok(hit(PATHS.recentSearches, "POST"), "recent searches POST");
+assert.ok(
+  captured.some((row) => row.method === "GET" && row.url.startsWith(`${config.apiBase}${PATHS.address}?`)),
+  "geocode must GET singular address with query"
 );
 
 assert.equal(PATHS.search, "/api/pns-global-search-api/v1/unified-search");

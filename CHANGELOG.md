@@ -1,3 +1,16 @@
+## 0.1.4 - 2026-08-26
+
+### Added
+
+- Read: home, home feed, web stores, restaurant-bus catalog, recent searches, web cart, geocode, active orders, order ETA/receipt/invoice/status, coupons, checkout preview (does not charge).
+- Address writes on live singular `/api/ms/users-address/address` (create/update/delete, intent-only).
+- `rappi_reorder` (cart gate), `rappi_cancel_order` and `rappi_tip_order` (pay gate, guest rejected), `rappi_rate_order` (intent-only).
+- Paths live-probed 200/400/401; 403 PATH_NOT_ALLOWED and 502-before-auth cart extras were not shipped.
+
+### Fixed
+
+- `rappi_set_active_address` now PUTs `/api/ms/users-address/address/:id` (`.../addresses/:id/select` is 404 HTML).
+
 ## 0.1.3 - 2026-08-26
 
 ### Added

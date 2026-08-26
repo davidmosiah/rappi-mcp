@@ -14,8 +14,9 @@ Default: read-only. Never pays.
 Charge only if RAPPI_ALLOW_MUTATIONS is enabled AND explicit_user_intent is true. Guest tokens cannot charge.
 Redacts street, phone, email, last-four.
 
-Read tools: rappi_search_stores, rappi_search_products, rappi_get_store, rappi_get_cart, rappi_list_addresses, rappi_list_orders, rappi_get_order, rappi_track_order, rappi_list_payment_methods.
-Gated cart: rappi_add_to_cart, rappi_update_cart_item, rappi_clear_cart.
-Gated pay: rappi_place_order, rappi_set_payment_method.
+Read: search/browse (stores, products, catalog, home, feed, recent searches), cart + web cart, addresses + geocode, orders + active + eta/receipt/invoice/status, coupons, checkout preview (no charge).
+Gated cart: rappi_add_to_cart, rappi_update_cart_item, rappi_clear_cart, rappi_reorder.
+Gated pay: rappi_place_order, rappi_set_payment_method, rappi_cancel_order, rappi_tip_order.
+Intent only: logout, address create/update/delete/select, rappi_rate_order.
 
 HTTP optional: loopback 127.0.0.1 + Origin allowlist. Tokens in ~/.rappi-mcp/tokens.json (0600), never in git/tarball.

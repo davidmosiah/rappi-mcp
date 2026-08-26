@@ -7,11 +7,15 @@ import { bulletList, makeError, makeResponse } from "./format.js";
 import {
   MutationGateError,
   assertAddressWriteAllowed,
+  assertCancelOrderAllowed,
   assertCartWriteAllowed,
+  assertExplicitIntent,
   assertLogoutAllowed,
   assertNotGuestForCharge,
   assertPaymentWriteAllowed,
-  assertPlaceOrderAllowed
+  assertPlaceOrderAllowed,
+  assertReorderAllowed,
+  assertTipAllowed
 } from "./mutation-gate.js";
 import { buildConnectionStatus } from "./connection-status.js";
 import { buildCapabilities } from "./capabilities.js";
@@ -356,6 +360,384 @@ export async function handleLogout(
       ok: true,
       logged_out: true
     });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleGeocodeAddress(
+  input: { latitude?: number; longitude?: number; privacy_mode?: PrivacyMode; response_format?: ResponseFormat },
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  const latitude = input.latitude ?? config.latitude;
+  const longitude = input.longitude ?? config.longitude;
+  if (latitude === undefined || longitude === undefined) {
+    return makeError("latitude and longitude are required (or set RAPPI_LAT / RAPPI_LNG).");
+  }
+  try {
+    const raw = await client.geocodeAddress(latitude, longitude);
+    const payload = applyPrivacy({ unofficial: true, geocode: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi geocode", { unofficial: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleCreateAddress(
+  input: {
+    latitude: number;
+    longitude: number;
+    address: string;
+    street?: string;
+    number?: string;
+    city?: string;
+    tag?: string;
+    description?: string;
+    explicit_user_intent?: boolean;
+    response_format?: ResponseFormat;
+  },
+  extra: HandlerDeps = {}
+) {
+  const { client } = deps(extra);
+  try {
+    assertAddressWriteAllowed(input.explicit_user_intent);
+    const raw = await client.createAddress(input);
+    return wrap({ ok: true, address: raw }, input.response_format ?? "markdown", "Rappi address created", { ok: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleUpdateAddress(
+  input: {
+    address_id: string;
+    latitude?: number;
+    longitude?: number;
+    address?: string;
+    street?: string;
+    number?: string;
+    city?: string;
+    tag?: string;
+    description?: string;
+    active?: boolean;
+    explicit_user_intent?: boolean;
+    response_format?: ResponseFormat;
+  },
+  extra: HandlerDeps = {}
+) {
+  const { client } = deps(extra);
+  try {
+    assertAddressWriteAllowed(input.explicit_user_intent);
+    const raw = await client.updateAddress({
+      id: input.address_id,
+      latitude: input.latitude ?? 0,
+      longitude: input.longitude ?? 0,
+      address: input.address ?? "",
+      street: input.street,
+      number: input.number,
+      city: input.city,
+      tag: input.tag,
+      description: input.description,
+      active: input.active
+    });
+    return wrap({ ok: true, address: raw }, input.response_format ?? "markdown", "Rappi address updated", { ok: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleDeleteAddress(
+  input: { address_id: string; explicit_user_intent?: boolean; response_format?: ResponseFormat },
+  extra: HandlerDeps = {}
+) {
+  const { client } = deps(extra);
+  try {
+    assertAddressWriteAllowed(input.explicit_user_intent);
+    const raw = await client.deleteAddress(input.address_id);
+    return wrap({ ok: true, address: raw }, input.response_format ?? "markdown", "Rappi address deleted", { ok: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleListActiveOrders(
+  input: { privacy_mode?: PrivacyMode; response_format?: ResponseFormat } = {},
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const [active, inProgress] = await Promise.all([client.listActiveOrders(), client.listInProgressOrders()]);
+    const payload = applyPrivacy(
+      { unofficial: true, active, in_progress: inProgress },
+      input.privacy_mode ?? config.privacyMode
+    );
+    return wrap(payload, input.response_format ?? "markdown", "Rappi active orders", { unofficial: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleGetOrderEta(
+  input: { order_id: string; privacy_mode?: PrivacyMode; response_format?: ResponseFormat },
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.getOrderEta(input.order_id);
+    const payload = applyPrivacy({ unofficial: true, eta: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi ETA", { order_id: input.order_id });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleGetOrderReceipt(
+  input: { order_id: string; privacy_mode?: PrivacyMode; response_format?: ResponseFormat },
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.getOrderReceipt(input.order_id);
+    const payload = applyPrivacy({ unofficial: true, receipt: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi receipt", { order_id: input.order_id });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleGetOrderInvoice(
+  input: { order_id: string; privacy_mode?: PrivacyMode; response_format?: ResponseFormat },
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.getOrderInvoice(input.order_id);
+    const payload = applyPrivacy({ unofficial: true, invoice: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi invoice", { order_id: input.order_id });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleGetOrderStatus(
+  input: { order_id: string; privacy_mode?: PrivacyMode; response_format?: ResponseFormat },
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.getOrderStatus(input.order_id);
+    const payload = applyPrivacy({ unofficial: true, status: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi order status", { order_id: input.order_id });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleListCoupons(
+  input: { privacy_mode?: PrivacyMode; response_format?: ResponseFormat } = {},
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.listCoupons();
+    const payload = applyPrivacy({ unofficial: true, coupons: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi coupons", { unofficial: true, redacted: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleCheckoutPreview(
+  input: {
+    address_id?: string;
+    payment_method_id?: string;
+    privacy_mode?: PrivacyMode;
+    response_format?: ResponseFormat;
+  } = {},
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.checkoutPreview({
+      address_id: input.address_id,
+      payment_method_id: input.payment_method_id
+    });
+    const payload = applyPrivacy({ unofficial: true, preview: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi checkout preview", {
+      unofficial: true,
+      charges: false
+    });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleHome(
+  input: { privacy_mode?: PrivacyMode; response_format?: ResponseFormat } = {},
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.home();
+    const payload = applyPrivacy({ unofficial: true, home: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi home", { unofficial: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleHomeFeed(
+  input: { privacy_mode?: PrivacyMode; response_format?: ResponseFormat } = {},
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.homeFeed();
+    const payload = applyPrivacy({ unofficial: true, feed: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi home feed", { unofficial: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleBrowseStores(
+  input: { privacy_mode?: PrivacyMode; response_format?: ResponseFormat } = {},
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.browseStores();
+    const payload = applyPrivacy({ unofficial: true, stores: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi web stores", { unofficial: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleBrowseCatalog(
+  input: {
+    query?: string;
+    latitude?: number;
+    longitude?: number;
+    limit?: number;
+    privacy_mode?: PrivacyMode;
+    response_format?: ResponseFormat;
+  } = {},
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.browseCatalog({
+      query: input.query,
+      latitude: input.latitude ?? config.latitude,
+      longitude: input.longitude ?? config.longitude,
+      limit: input.limit
+    });
+    const payload = applyPrivacy({ unofficial: true, catalog: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi catalog", { unofficial: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleRecentSearches(
+  input: {
+    latitude?: number;
+    longitude?: number;
+    privacy_mode?: PrivacyMode;
+    response_format?: ResponseFormat;
+  } = {},
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.recentSearches({
+      latitude: input.latitude ?? config.latitude,
+      longitude: input.longitude ?? config.longitude
+    });
+    const payload = applyPrivacy({ unofficial: true, recent: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi recent searches", { unofficial: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleWebCart(
+  input: { privacy_mode?: PrivacyMode; response_format?: ResponseFormat } = {},
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.webCart();
+    const payload = applyPrivacy({ unofficial: true, cart: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi web cart", { unofficial: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleReorder(
+  input: { order_id: string; explicit_user_intent?: boolean; response_format?: ResponseFormat },
+  extra: HandlerDeps = {}
+) {
+  const { allowMutations, client } = deps(extra);
+  try {
+    assertReorderAllowed({ allowMutations, explicitUserIntent: input.explicit_user_intent });
+    const raw = await client.reorder(input.order_id);
+    return wrap({ ok: true, reorder: raw }, input.response_format ?? "markdown", "Rappi reorder", { ok: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleCancelOrder(
+  input: { order_id: string; explicit_user_intent?: boolean; response_format?: ResponseFormat },
+  extra: HandlerDeps = {}
+) {
+  const { allowMutations, client, tokens } = deps(extra);
+  try {
+    assertCancelOrderAllowed({ allowMutations, explicitUserIntent: input.explicit_user_intent });
+    const token = await tokens.read();
+    assertNotGuestForCharge(token?.source ?? (process.env.RAPPI_ACCESS_TOKEN ? "user" : undefined));
+    const raw = await client.cancelOrder(input.order_id);
+    return wrap({ ok: true, cancel: raw }, input.response_format ?? "markdown", "Rappi cancel", { ok: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleRateOrder(
+  input: {
+    order_id: string;
+    score: number;
+    comment?: string;
+    explicit_user_intent?: boolean;
+    response_format?: ResponseFormat;
+  },
+  extra: HandlerDeps = {}
+) {
+  const { client } = deps(extra);
+  try {
+    assertExplicitIntent(input.explicit_user_intent, "rate a Rappi order");
+    const raw = await client.rateOrder(input.order_id, input.score, input.comment);
+    return wrap({ ok: true, rate: raw }, input.response_format ?? "markdown", "Rappi rating", { ok: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleTipOrder(
+  input: { order_id: string; tip: number; explicit_user_intent?: boolean; response_format?: ResponseFormat },
+  extra: HandlerDeps = {}
+) {
+  const { allowMutations, client, tokens } = deps(extra);
+  try {
+    assertTipAllowed({ allowMutations, explicitUserIntent: input.explicit_user_intent });
+    const token = await tokens.read();
+    assertNotGuestForCharge(token?.source ?? (process.env.RAPPI_ACCESS_TOKEN ? "user" : undefined));
+    const raw = await client.tipOrder(input.order_id, input.tip);
+    return wrap({ ok: true, tip: raw }, input.response_format ?? "markdown", "Rappi tip", { ok: true });
   } catch (error) {
     return gateError(error);
   }

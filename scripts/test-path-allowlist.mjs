@@ -6,6 +6,10 @@ import { consumerRequestUrl, RappiClientError } from "../dist/services/rappi-cli
 assert.equal(isAllowedConsumerPath(PATHS.cart), true);
 assert.equal(isAllowedConsumerPath(`${PATHS.orders}/abc/tracking`), true);
 assert.equal(isAllowedConsumerPath(`${PATHS.storeDetail}/1`), true);
+assert.equal(isAllowedConsumerPath(`${PATHS.address}/1`), true);
+assert.equal(isAllowedConsumerPath(`${PATHS.orders}/1/eta`), true);
+assert.equal(isAllowedConsumerPath(PATHS.catalog), true);
+assert.equal(isAllowedConsumerPath(PATHS.homeFeed), true);
 assert.equal(isAllowedConsumerPath("/api/ms/cart/v1/carts/current"), false);
 assert.equal(isAllowedConsumerPath("https://evil.example/x"), false);
 assert.equal(isAllowedConsumerPath("/api/ms/shopping-cart/v1/all/get/../evil"), false);
