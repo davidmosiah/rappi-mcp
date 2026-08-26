@@ -13,8 +13,10 @@ export interface RappiTokenSet {
 export interface RappiConfig {
   apiBase: string;
   country: string;
+  origin: string;
   tokenPath: string;
   configPath: string;
+  deviceIdPath: string;
   privacyMode: PrivacyMode;
   allowMutations: boolean;
   latitude?: number;

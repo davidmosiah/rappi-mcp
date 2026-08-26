@@ -1,6 +1,6 @@
 {
   "name": "rappi-mcp-unofficial",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Unofficial local-first Rappi MCP for personal cart, store search, addresses and order tracking. Never pays unless RAPPI_ALLOW_MUTATIONS and explicit_user_intent are both set.",
   "type": "module",
   "bin": {
@@ -28,8 +28,9 @@
     "test:mutation-gate": "node scripts/test-mutation-gate.mjs",
     "test:redaction": "node scripts/test-redaction.mjs",
     "test:handlers": "node scripts/test-handlers.mjs",
+    "test:client-paths": "node scripts/test-client-paths.mjs",
     "test:secret-scan": "node scripts/secret-scan.mjs",
-    "test": "npm run typecheck && npm run build && npm run smoke && npm run test:mutation-gate && npm run test:redaction && npm run test:handlers && npm run test:secret-scan",
+    "test": "npm run typecheck && npm run build && npm run smoke && npm run test:mutation-gate && npm run test:redaction && npm run test:handlers && npm run test:client-paths && npm run test:secret-scan",
     "prepublishOnly": "npm test"
   },
   "keywords": [

@@ -1,3 +1,10 @@
+## 0.1.1 - 2026-08-26
+
+### Fixed
+
+- Consumer PATHS now hit real edgen-allowed routes (`pns-global-search-api/v1/unified-search`, `ms/shopping-cart/v1/all/get`, `ms/users-address/addresses`, `user-order-home/orders`) instead of 403 `PATH_NOT_ALLOWED` inventions.
+- Guest auth is passport `deviceId` then `x-guest-api-key`; every request sends origin, vendor, x-application-id and deviceid.
+
 ## 0.1.0 - 2026-08-26
 
 ### Added

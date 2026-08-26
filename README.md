@@ -2,7 +2,7 @@
 
 Local-first MCP for **your** Rappi cart: search nearby stores and products, inspect the cart, list saved addresses, list and track orders.
 
-**This is unofficial.** Not affiliated with, endorsed by, or supported by Rappi. Rappi does not publish a stable consumer cart API. This server talks to the same undocumented web/app endpoints (`services.rappi.com.br` by default). They can change without notice.
+**This is unofficial.** Not affiliated with, endorsed by, or supported by Rappi. Rappi does not publish a stable consumer cart API. This server talks to the undocumented web/app surface (`services.rappi.com.br` by default): `pns-global-search-api`, `ms/shopping-cart`, `ms/users-address`, `user-order-home`. They can change without notice.
 
 This is **not** the Rappi Partners / restaurant-integrations OAuth API.
 

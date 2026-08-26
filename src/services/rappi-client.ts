@@ -1,4 +1,13 @@
-import { DEFAULT_USER_AGENT, PATHS, REQUEST_TIMEOUT_MS } from "../constants.js";
+import { randomUUID } from "node:crypto";
+import { dirname } from "node:path";
+import { promises as fs } from "node:fs";
+import {
+  PATHS,
+  REQUEST_TIMEOUT_MS,
+  WEB_APPLICATION_ID,
+  WEB_USER_AGENT,
+  WEB_VENDOR
+} from "../constants.js";
 import type { FetchLike, RappiConfig, RappiTokenSet } from "../types.js";
 import { TokenStore } from "./token-store.js";
 
@@ -33,6 +42,20 @@ export interface PlaceOrderInput {
   notes?: string;
 }
 
+export function consumerHeaders(origin: string, deviceId: string): Record<string, string> {
+  return {
+    accept: "application/json",
+    "content-type": "application/json",
+    "user-agent": WEB_USER_AGENT,
+    origin,
+    referer: `${origin}/`,
+    deviceid: deviceId,
+    deviceId,
+    "x-application-id": WEB_APPLICATION_ID,
+    vendor: WEB_VENDOR
+  };
+}
+
 export class RappiClient {
   constructor(
     private readonly config: RappiConfig,
@@ -41,7 +64,18 @@ export class RappiClient {
   ) {}
 
   async guestToken(): Promise<RappiTokenSet> {
-    const payload = await this.requestJson("POST", PATHS.guest, { auth: false, body: {} });
+    const deviceId = await this.deviceId();
+    const passport = await this.requestJson("GET", PATHS.guestPassport, { auth: false });
+    const guestKey = pickGuestKey(passport);
+    if (!guestKey) {
+      throw new RappiClientError("Guest passport had no token", undefined, "RAPPI_UPSTREAM_UNAVAILABLE");
+    }
+    const payload = await this.requestJson("POST", PATHS.guest, {
+      auth: false,
+      body: {},
+      extraHeaders: { "x-guest-api-key": guestKey },
+      deviceId
+    });
     const access = pickToken(payload);
     if (!access) {
       throw new RappiClientError("Guest token response had no access_token", undefined, "RAPPI_UPSTREAM_UNAVAILABLE");
@@ -63,24 +97,14 @@ export class RappiClient {
   async searchStores(input: SearchInput): Promise<unknown> {
     return this.requestJson("POST", PATHS.search, {
       auth: "optional",
-      body: {
-        lat: input.latitude,
-        lng: input.longitude,
-        limit: input.limit ?? 20,
-        query: input.query ?? ""
-      }
+      body: unifiedSearchBody(input, "stores")
     });
   }
 
   async searchProducts(input: SearchInput): Promise<unknown> {
     return this.requestJson("POST", PATHS.products, {
       auth: "optional",
-      body: {
-        query: input.query ?? "",
-        lat: input.latitude,
-        lng: input.longitude,
-        size: input.limit ?? 20
-      }
+      body: unifiedSearchBody(input, "products")
     });
   }
 
@@ -89,7 +113,7 @@ export class RappiClient {
   }
 
   async addToCart(item: CartItemInput): Promise<unknown> {
-    return this.requestJson("POST", PATHS.cartProducts, { auth: true, body: item });
+    return this.requestJson("POST", PATHS.cartAdd, { auth: true, body: item });
   }
 
   async updateCartItem(item: CartItemInput): Promise<unknown> {
@@ -100,7 +124,7 @@ export class RappiClient {
   }
 
   async clearCart(): Promise<unknown> {
-    return this.requestJson("DELETE", PATHS.cart, { auth: true });
+    return this.requestJson("DELETE", PATHS.cartClear, { auth: true });
   }
 
   async listAddresses(): Promise<unknown> {
@@ -137,15 +161,35 @@ export class RappiClient {
     return this.requestJson("POST", PATHS.checkout, { auth: true, body: input });
   }
 
+  async deviceId(): Promise<string> {
+    const fromEnv = process.env.RAPPI_DEVICE_ID?.trim();
+    if (fromEnv) return fromEnv;
+    try {
+      const existing = (await fs.readFile(this.config.deviceIdPath, "utf8")).trim();
+      if (existing) return existing;
+    } catch {
+      // create
+    }
+    const id = randomUUID();
+    await fs.mkdir(dirname(this.config.deviceIdPath), { recursive: true, mode: 0o700 });
+    await fs.writeFile(this.config.deviceIdPath, `${id}\n`, { mode: 0o600 });
+    return id;
+  }
+
   private async requestJson(
     method: string,
     path: string,
-    options: { auth: boolean | "optional"; body?: unknown }
+    options: {
+      auth: boolean | "optional";
+      body?: unknown;
+      extraHeaders?: Record<string, string>;
+      deviceId?: string;
+    }
   ): Promise<unknown> {
+    const deviceId = options.deviceId ?? (await this.deviceId());
     const headers: Record<string, string> = {
-      accept: "application/json",
-      "content-type": "application/json",
-      "user-agent": DEFAULT_USER_AGENT
+      ...consumerHeaders(this.config.origin, deviceId),
+      ...options.extraHeaders
     };
     if (options.auth) {
       const token = await this.tokens.read();
@@ -208,6 +252,17 @@ export class RappiClient {
   }
 }
 
+function unifiedSearchBody(input: SearchInput, kind: "stores" | "products"): Record<string, unknown> {
+  return {
+    query: input.query ?? "",
+    lat: input.latitude,
+    lng: input.longitude,
+    limit: input.limit ?? 20,
+    size: input.limit ?? 20,
+    kind
+  };
+}
+
 function pickToken(payload: unknown): string | undefined {
   if (!payload || typeof payload !== "object") return undefined;
   const record = payload as Record<string, unknown>;
@@ -217,4 +272,10 @@ function pickToken(payload: unknown): string | undefined {
     return (nested as Record<string, unknown>).access_token as string;
   }
   return undefined;
+}
+
+function pickGuestKey(payload: unknown): string | undefined {
+  if (!payload || typeof payload !== "object") return undefined;
+  const token = (payload as Record<string, unknown>).token;
+  return typeof token === "string" ? token : undefined;
 }

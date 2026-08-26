@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { COUNTRY_BASES, DEFAULT_API_BASE, TOKEN_DIR_NAME } from "../constants.js";
+import { COUNTRY_BASES, DEFAULT_API_BASE, TOKEN_DIR_NAME, WEB_ORIGIN_BY_COUNTRY } from "../constants.js";
 import type { PrivacyMode, RappiConfig } from "../types.js";
 
 type Env = Record<string, string | undefined>;
@@ -33,11 +33,14 @@ export function tokenDir(homeDir = homedir()): string {
 export function peekConfig(source: Env = process.env, homeDir = homedir()): RappiConfig {
   const country = (env("RAPPI_COUNTRY", source) ?? "BR").toUpperCase();
   const apiBase = env("RAPPI_API_BASE", source) ?? COUNTRY_BASES[country] ?? DEFAULT_API_BASE;
+  const dir = tokenDir(homeDir);
   return {
     apiBase: apiBase.replace(/\/$/, ""),
     country,
-    tokenPath: env("RAPPI_TOKEN_PATH", source) ?? join(tokenDir(homeDir), "tokens.json"),
-    configPath: env("RAPPI_CONFIG_PATH", source) ?? join(tokenDir(homeDir), "config.json"),
+    origin: env("RAPPI_ORIGIN", source) ?? WEB_ORIGIN_BY_COUNTRY[country] ?? "https://www.rappi.com.br",
+    tokenPath: env("RAPPI_TOKEN_PATH", source) ?? join(dir, "tokens.json"),
+    configPath: env("RAPPI_CONFIG_PATH", source) ?? join(dir, "config.json"),
+    deviceIdPath: env("RAPPI_DEVICE_ID_PATH", source) ?? join(dir, "device-id"),
     privacyMode: parsePrivacyMode(env("RAPPI_PRIVACY_MODE", source)),
     allowMutations: parseBool(env("RAPPI_ALLOW_MUTATIONS", source), false),
     latitude: parseCoord(env("RAPPI_LAT", source)),

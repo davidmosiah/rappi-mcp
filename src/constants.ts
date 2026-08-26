@@ -1,5 +1,5 @@
 export const SERVER_NAME = "rappi-mcp-server";
-export const SERVER_VERSION = "0.1.0";
+export const SERVER_VERSION = "0.1.1";
 export const NPM_PACKAGE_NAME = "rappi-mcp-unofficial";
 export const PINNED_NPM_PACKAGE = `${NPM_PACKAGE_NAME}@${SERVER_VERSION}`;
 
@@ -18,20 +18,43 @@ export const COUNTRY_BASES: Record<string, string> = {
   CR: "https://services.rappi.co.cr"
 };
 
-/** Unofficial consumer paths (web/app). Not Rappi Partners restaurant OAuth. */
+/**
+ * Unofficial consumer paths verified against services.rappi.com.br (edgen).
+ * Invented `/api/ms/cart|user-addresses|user-orders|search-proxy` return 403 PATH_NOT_ALLOWED.
+ * These return 200/400/401 (path exists), not PATH_NOT_ALLOWED.
+ */
 export const PATHS = {
+  guestPassport: "/api/rocket/v2/guest/passport/",
   guest: "/api/rocket/v2/guest",
-  search: "/api/ms/web-proxy/dynamic-list/cpgs/",
-  stores: "/api/ms/web-home/v1/home",
-  products: "/api/ms/search-proxy/search",
-  cart: "/api/ms/cart/v1/carts/current",
-  cartProducts: "/api/ms/cart/v1/carts/current/products",
-  addresses: "/api/ms/user-addresses",
-  orders: "/api/ms/user-orders",
-  checkout: "/api/ms/checkout/v1/orders",
-  paymentMethods: "/api/ms/payments/v1/payment-methods"
+  search: "/api/pns-global-search-api/v1/unified-search",
+  products: "/api/pns-global-search-api/v1/unified-search",
+  cart: "/api/ms/shopping-cart/v1/all/get",
+  cartAdd: "/api/ms/shopping-cart/v1/add",
+  cartProducts: "/api/ms/shopping-cart/v1/products",
+  cartClear: "/api/ms/shopping-cart/v1/all",
+  addresses: "/api/ms/users-address/addresses",
+  orders: "/api/user-order-home/orders",
+  checkout: "/api/user-order-home/checkout",
+  paymentMethods: "/api/ms/payment-method/v1/methods"
 } as const;
 
-export const DEFAULT_USER_AGENT = `${SERVER_NAME}/${SERVER_VERSION}`;
+export const WEB_ORIGIN_BY_COUNTRY: Record<string, string> = {
+  BR: "https://www.rappi.com.br",
+  CO: "https://www.rappi.com",
+  MX: "https://www.rappi.com.mx",
+  AR: "https://www.rappi.com.ar",
+  CL: "https://www.rappi.cl",
+  PE: "https://www.rappi.pe",
+  UY: "https://www.rappi.com.uy",
+  EC: "https://www.rappi.com.ec",
+  CR: "https://www.rappi.com.cr"
+};
+
+export const WEB_APPLICATION_ID = "rappi-home-web/1.0.0";
+export const WEB_VENDOR = "web";
+export const WEB_USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+
+export const DEFAULT_USER_AGENT = WEB_USER_AGENT;
 export const REQUEST_TIMEOUT_MS = 20_000;
 export const TOKEN_DIR_NAME = ".rappi-mcp";
