@@ -57,7 +57,8 @@ function hit(suffix, method) {
 }
 
 assert.ok(hit(PATHS.search, "POST"), `search must POST ${PATHS.search}, got ${JSON.stringify(captured)}`);
-assert.ok(hit(PATHS.cart, "GET"), `cart must GET ${PATHS.cart}`);
+assert.ok(hit(PATHS.cart, "POST"), `cart inspect must POST ${PATHS.cart} (GET 502s before auth)`);
+assert.equal(Boolean(hit(PATHS.cart, "GET")), false, "cart inspect must not GET (live GET is 502 Bad Gateway)");
 assert.ok(hit(PATHS.addresses, "GET"), `addresses must GET ${PATHS.addresses}`);
 assert.ok(hit(PATHS.orders, "GET"), `orders must GET ${PATHS.orders}`);
 

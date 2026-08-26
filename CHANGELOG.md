@@ -1,3 +1,9 @@
+## 0.1.2 - 2026-08-26
+
+### Fixed
+
+- `getCart` uses POST `/api/ms/shopping-cart/v1/all/get`. Live GET on that path 502s at the edge before auth; POST returns unauthorized (path exists). Capture test forbids GET cart.
+
 ## 0.1.1 - 2026-08-26
 
 ### Fixed

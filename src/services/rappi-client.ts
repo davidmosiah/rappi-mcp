@@ -109,7 +109,8 @@ export class RappiClient {
   }
 
   async getCart(): Promise<unknown> {
-    return this.requestJson("GET", PATHS.cart, { auth: true });
+    // GET on this path 502s at edgen before auth; POST returns 401 unauthorized (path exists).
+    return this.requestJson("POST", PATHS.cart, { auth: true, body: {} });
   }
 
   async addToCart(item: CartItemInput): Promise<unknown> {
