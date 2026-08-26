@@ -24,6 +24,8 @@ npx -y rappi-mcp-unofficial auth --token <personal-access-token>
 npx -y rappi-mcp-unofficial doctor
 ```
 
+Token is **not** OAuth. Open [rappi.com.br](https://www.rappi.com.br) logged in → DevTools → Network → any `services.rappi.com.br` call → copy `Authorization` (drop `Bearer `). Guest search still works without a token; pay tools stay blocked.
+
 Stdio snippet (Claude Desktop, Cursor, Grok Bot). Do **not** set `RAPPI_ALLOW_MUTATIONS` here:
 
 ```json

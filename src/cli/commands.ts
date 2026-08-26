@@ -55,7 +55,15 @@ async function runAuth(args: string[]): Promise<number> {
   const idx = args.indexOf("--token");
   const token = idx >= 0 ? args[idx + 1] : process.env.RAPPI_ACCESS_TOKEN;
   if (!token || token.startsWith("--")) {
-    console.error("Pass --token <access_token> or set RAPPI_ACCESS_TOKEN. Do not paste tokens into git.");
+    console.error(`Rappi has no consumer OAuth. Get a token from the website:
+
+  1. Open https://www.rappi.com.br and sign in
+  2. DevTools → Network → any services.rappi.com.br request
+  3. Copy Authorization (Bearer …) then:
+     rappi-mcp-unofficial auth --token <jwt>
+
+Guest browse (no pay) happens automatically without a token.
+Do not paste tokens into git.`);
     return 1;
   }
   const config = peekConfig();
