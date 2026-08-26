@@ -51,6 +51,9 @@ await client.searchStores({ query: "leite", latitude: -3.7, longitude: -38.5 });
 await client.getCart();
 await client.listAddresses();
 await client.listOrders();
+await client.listPaymentMethods();
+await client.getStore("store-1");
+await client.trackOrder("order-1");
 
 function hit(suffix, method) {
   return captured.find((row) => row.url === `${config.apiBase}${suffix}` && row.method === method);
@@ -61,6 +64,15 @@ assert.ok(hit(PATHS.cart, "POST"), `cart inspect must POST ${PATHS.cart} (GET 50
 assert.equal(Boolean(hit(PATHS.cart, "GET")), false, "cart inspect must not GET (live GET is 502 Bad Gateway)");
 assert.ok(hit(PATHS.addresses, "GET"), `addresses must GET ${PATHS.addresses}`);
 assert.ok(hit(PATHS.orders, "GET"), `orders must GET ${PATHS.orders}`);
+assert.ok(hit(PATHS.paymentMethods, "GET"), `payment methods must GET ${PATHS.paymentMethods}`);
+assert.ok(
+  hit(`${PATHS.storeDetail}/store-1`, "GET"),
+  `store detail must GET ${PATHS.storeDetail}/:id`
+);
+assert.ok(
+  hit(`${PATHS.orders}/order-1/tracking`, "GET"),
+  `tracking must GET ${PATHS.orders}/:id/tracking`
+);
 
 assert.equal(PATHS.search, "/api/pns-global-search-api/v1/unified-search");
 assert.equal(PATHS.cart, "/api/ms/shopping-cart/v1/all/get");

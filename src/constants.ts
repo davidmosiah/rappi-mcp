@@ -1,5 +1,5 @@
 export const SERVER_NAME = "rappi-mcp-server";
-export const SERVER_VERSION = "0.1.2";
+export const SERVER_VERSION = "0.1.3";
 export const NPM_PACKAGE_NAME = "rappi-mcp-unofficial";
 export const PINNED_NPM_PACKAGE = `${NPM_PACKAGE_NAME}@${SERVER_VERSION}`;
 
@@ -35,7 +35,8 @@ export const PATHS = {
   addresses: "/api/ms/users-address/addresses",
   orders: "/api/user-order-home/orders",
   checkout: "/api/user-order-home/checkout",
-  paymentMethods: "/api/ms/payment-method/v1/methods"
+  paymentMethods: "/api/ms/payment-method/v1/methods",
+  storeDetail: "/api/pns-global-search-api/v1/stores"
 } as const;
 
 export const WEB_ORIGIN_BY_COUNTRY: Record<string, string> = {

@@ -9,7 +9,8 @@ import {
   PlaceOrderInputSchema,
   ReadInputSchema,
   ResponseOnlyInputSchema,
-  SearchInputSchema
+  SearchInputSchema,
+  StoreIdInputSchema
 } from "../schemas/common.js";
 import {
   handleAddToCart,
@@ -18,8 +19,10 @@ import {
   handleConnectionStatus,
   handleGetCart,
   handleGetOrder,
+  handleGetStore,
   handleListAddresses,
   handleListOrders,
+  handleListPaymentMethods,
   handleLogout,
   handlePlaceOrder,
   handlePrivacyAudit,
@@ -27,6 +30,7 @@ import {
   handleSearchStores,
   handleSetActiveAddress,
   handleSetPaymentMethod,
+  handleTrackOrder,
   handleUpdateCartItem
 } from "../services/handlers.js";
 
@@ -132,6 +136,39 @@ export function registerRappiTools(server: McpServer): void {
       annotations: readOnly
     },
     async (args) => handleGetOrder(args)
+  );
+
+  server.registerTool(
+    "rappi_track_order",
+    {
+      title: "Track Rappi order ETA",
+      description: "Live tracking / ETA for one order (unofficial user-order-home tracking). Read-only.",
+      inputSchema: OrderIdInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleTrackOrder(args)
+  );
+
+  server.registerTool(
+    "rappi_get_store",
+    {
+      title: "Get Rappi store",
+      description: "Store catalog/detail from unofficial pns-global-search stores/{id}. Read-only.",
+      inputSchema: StoreIdInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleGetStore(args)
+  );
+
+  server.registerTool(
+    "rappi_list_payment_methods",
+    {
+      title: "List Rappi payment methods",
+      description: "Read saved payment methods. Last-four and identity redacted by default. Does not charge.",
+      inputSchema: ReadInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleListPaymentMethods(args)
   );
 
   server.registerTool(

@@ -6,6 +6,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { SERVER_NAME, SERVER_VERSION } from "./constants.js";
 import { runCliCommand } from "./cli/commands.js";
 import { registerRappiTools } from "./tools/rappi-tools.js";
+import { defaultAllowedOrigin, defaultMcpBindHost, isAllowedMcpOrigin } from "./services/http-origin.js";
 
 export function createServer(): McpServer {
   const server = new McpServer({
@@ -23,13 +24,20 @@ async function runStdio(): Promise<void> {
 }
 
 async function runHttp(): Promise<void> {
-  const host = process.env.RAPPI_MCP_HOST ?? "127.0.0.1";
+  const host = defaultMcpBindHost();
   const port = Number(process.env.RAPPI_MCP_PORT ?? 3000);
+  const allowedOrigin = defaultAllowedOrigin(host, port);
 
   const http = createHttpServer(async (req, res) => {
+    const origin = Array.isArray(req.headers.origin) ? req.headers.origin[0] : req.headers.origin;
+    if (!isAllowedMcpOrigin(origin, allowedOrigin)) {
+      res.writeHead(403, { "content-type": "application/json" });
+      res.end(JSON.stringify({ error: "origin_not_allowed" }));
+      return;
+    }
     if (req.method === "GET" && req.url === "/health") {
       res.writeHead(200, { "content-type": "application/json" });
-      res.end(JSON.stringify({ ok: true, name: SERVER_NAME, version: SERVER_VERSION }));
+      res.end(JSON.stringify({ ok: true, name: SERVER_NAME, version: SERVER_VERSION, bind: host }));
       return;
     }
     if (req.method !== "POST" || req.url !== "/mcp") {
@@ -61,7 +69,9 @@ async function runHttp(): Promise<void> {
   });
 
   http.listen(port, host, () => {
-    console.error(`${SERVER_NAME} HTTP transport listening on http://${host}:${port}/mcp`);
+    console.error(
+      `${SERVER_NAME} HTTP transport listening on http://${host}:${port}/mcp (loopback default; Origin ${allowedOrigin})`
+    );
   });
 }
 

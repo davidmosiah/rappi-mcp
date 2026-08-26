@@ -165,6 +165,51 @@ export async function handleListOrders(
   }
 }
 
+export async function handleListPaymentMethods(
+  input: { privacy_mode?: PrivacyMode; response_format?: ResponseFormat } = {},
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.listPaymentMethods();
+    const payload = applyPrivacy({ unofficial: true, payment_methods: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi payment methods", {
+      unofficial: true,
+      redacted: true
+    });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleGetStore(
+  input: { store_id: string; privacy_mode?: PrivacyMode; response_format?: ResponseFormat },
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.getStore(input.store_id);
+    const payload = applyPrivacy({ unofficial: true, store: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi store", { store_id: input.store_id });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleTrackOrder(
+  input: { order_id: string; privacy_mode?: PrivacyMode; response_format?: ResponseFormat },
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.trackOrder(input.order_id);
+    const payload = applyPrivacy({ unofficial: true, tracking: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi tracking", { order_id: input.order_id });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
 export async function handleGetOrder(
   input: { order_id: string; privacy_mode?: PrivacyMode; response_format?: ResponseFormat },
   extra: HandlerDeps = {}

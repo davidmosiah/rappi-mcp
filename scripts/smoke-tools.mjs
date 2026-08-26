@@ -12,8 +12,10 @@ const expected = [
   "rappi_connection_status",
   "rappi_get_cart",
   "rappi_get_order",
+  "rappi_get_store",
   "rappi_list_addresses",
   "rappi_list_orders",
+  "rappi_list_payment_methods",
   "rappi_logout",
   "rappi_place_order",
   "rappi_privacy_audit",
@@ -21,6 +23,7 @@ const expected = [
   "rappi_search_stores",
   "rappi_set_active_address",
   "rappi_set_payment_method",
+  "rappi_track_order",
   "rappi_update_cart_item"
 ];
 
@@ -41,7 +44,17 @@ try {
   const tools = await client.listTools();
   const names = tools.tools.map((t) => t.name).sort();
   assert.deepEqual(names, expected.sort());
-  for (const need of ["rappi_search_stores", "rappi_get_cart", "rappi_list_addresses", "rappi_list_orders"]) {
+  for (const need of [
+    "rappi_search_stores",
+    "rappi_search_products",
+    "rappi_get_cart",
+    "rappi_list_addresses",
+    "rappi_list_orders",
+    "rappi_get_order",
+    "rappi_list_payment_methods",
+    "rappi_get_store",
+    "rappi_track_order"
+  ]) {
     assert.ok(names.includes(need), `missing ${need}`);
   }
 

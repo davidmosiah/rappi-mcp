@@ -1,3 +1,15 @@
+## 0.1.3 - 2026-08-26
+
+### Added
+
+- Read tools: `rappi_list_payment_methods`, `rappi_get_store`, `rappi_track_order` (paths live-probed: 401, not 403 PATH_NOT_ALLOWED).
+- HTTP Origin check on optional Streamable HTTP; default bind 127.0.0.1.
+- In-process consumer path allowlist so the client cannot call arbitrary URLs.
+
+### Changed
+
+- README first screen: unofficial, never-pay, 60-second setup, read vs gated table, loopback HTTP.
+
 ## 0.1.2 - 2026-08-26
 
 ### Fixed

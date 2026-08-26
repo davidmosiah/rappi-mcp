@@ -1,11 +1,21 @@
 # rappi-mcp-unofficial
 
-Unofficial local-first MCP for personal Rappi use (Brazil default).
+Unofficial local-first MCP for personal Rappi (Brazil default). Not Partners.
 
-- Install: `npx -y rappi-mcp-unofficial`
-- Auth: `npx -y rappi-mcp-unofficial auth --token <personal-token>`
-- Doctor: `npx -y rappi-mcp-unofficial doctor`
-- Default: read-only. Never pays.
-- To charge: `RAPPI_ALLOW_MUTATIONS=true` AND tool argument `explicit_user_intent: true`.
-- Not Rappi Partners. Consumer web/app surface; unstable.
-- Tokens live in `~/.rappi-mcp/tokens.json` (0600), never in the npm tarball.
+Install:
+- npx -y rappi-mcp-unofficial setup
+- npx -y rappi-mcp-unofficial auth --token <personal-token>
+- npx -y rappi-mcp-unofficial doctor
+
+Stdio (never set RAPPI_ALLOW_MUTATIONS in the snippet):
+{ "mcpServers": { "rappi": { "command": "npx", "args": ["-y", "rappi-mcp-unofficial"] } } }
+
+Default: read-only. Never pays.
+Charge only if RAPPI_ALLOW_MUTATIONS is enabled AND explicit_user_intent is true. Guest tokens cannot charge.
+Redacts street, phone, email, last-four.
+
+Read tools: rappi_search_stores, rappi_search_products, rappi_get_store, rappi_get_cart, rappi_list_addresses, rappi_list_orders, rappi_get_order, rappi_track_order, rappi_list_payment_methods.
+Gated cart: rappi_add_to_cart, rappi_update_cart_item, rappi_clear_cart.
+Gated pay: rappi_place_order, rappi_set_payment_method.
+
+HTTP optional: loopback 127.0.0.1 + Origin allowlist. Tokens in ~/.rappi-mcp/tokens.json (0600), never in git/tarball.

@@ -16,4 +16,15 @@ const handlers = readFileSync(join(root, "src/services/handlers.ts"), "utf8");
 assert.match(handlers, /assertPlaceOrderAllowed/);
 assert.doesNotMatch(handlers, /RAPPI_ACCESS_TOKEN\s*=\s*['"]npm_/);
 
+for (const rel of [
+  "examples/claude-desktop.json",
+  "examples/grok-bot.md",
+  "README.md",
+  "llms.txt",
+  "SECURITY.md"
+]) {
+  const text = readFileSync(join(root, rel), "utf8");
+  assert.doesNotMatch(text, /RAPPI_ALLOW_MUTATIONS\s*=\s*true/);
+}
+
 console.log(JSON.stringify({ ok: true, suite: "secret-scan", files }, null, 2));

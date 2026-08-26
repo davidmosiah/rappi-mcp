@@ -10,6 +10,7 @@ import {
 } from "../constants.js";
 import type { FetchLike, RappiConfig, RappiTokenSet } from "../types.js";
 import { TokenStore } from "./token-store.js";
+import { assertAllowedConsumerPath } from "./path-allowlist.js";
 
 export class RappiClientError extends Error {
   constructor(
@@ -151,6 +152,14 @@ export class RappiClient {
     return this.requestJson("GET", PATHS.paymentMethods, { auth: true });
   }
 
+  async getStore(storeId: string): Promise<unknown> {
+    return this.requestJson("GET", `${PATHS.storeDetail}/${encodeURIComponent(storeId)}`, { auth: "optional" });
+  }
+
+  async trackOrder(orderId: string): Promise<unknown> {
+    return this.requestJson("GET", `${PATHS.orders}/${encodeURIComponent(orderId)}/tracking`, { auth: true });
+  }
+
   async setPaymentMethod(paymentMethodId: string): Promise<unknown> {
     return this.requestJson("PUT", PATHS.paymentMethods, {
       auth: true,
@@ -187,6 +196,7 @@ export class RappiClient {
       deviceId?: string;
     }
   ): Promise<unknown> {
+    const url = consumerRequestUrl(this.config.apiBase, path);
     const deviceId = options.deviceId ?? (await this.deviceId());
     const headers: Record<string, string> = {
       ...consumerHeaders(this.config.origin, deviceId),
@@ -219,7 +229,7 @@ export class RappiClient {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
-      const response = await this.fetchImpl(this.config.apiBase + path, {
+      const response = await this.fetchImpl(url, {
         method,
         headers,
         body: options.body === undefined || method === "GET" || method === "DELETE" ? undefined : JSON.stringify(options.body),
@@ -251,6 +261,15 @@ export class RappiClient {
       clearTimeout(timer);
     }
   }
+}
+
+export function consumerRequestUrl(apiBase: string, path: string): string {
+  try {
+    assertAllowedConsumerPath(path);
+  } catch (error) {
+    throw new RappiClientError((error as Error).message, undefined, "PATH_NOT_ALLOWED");
+  }
+  return apiBase.replace(/\/$/, "") + path;
 }
 
 function unifiedSearchBody(input: SearchInput, kind: "stores" | "products"): Record<string, unknown> {

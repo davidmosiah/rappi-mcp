@@ -32,6 +32,12 @@ export const OrderIdInputSchema = z.object({
   response_format: ResponseFormatSchema
 }).strict();
 
+export const StoreIdInputSchema = z.object({
+  store_id: z.string().min(1),
+  privacy_mode: PrivacyModeSchema,
+  response_format: ResponseFormatSchema
+}).strict();
+
 export const LogoutInputSchema = z.object({
   explicit_user_intent: Intent,
   response_format: ResponseFormatSchema

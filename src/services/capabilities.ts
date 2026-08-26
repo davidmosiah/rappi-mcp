@@ -14,10 +14,13 @@ export function buildCapabilities() {
     read_tools: [
       "rappi_search_stores",
       "rappi_search_products",
+      "rappi_get_store",
       "rappi_get_cart",
       "rappi_list_addresses",
       "rappi_list_orders",
-      "rappi_get_order"
+      "rappi_get_order",
+      "rappi_track_order",
+      "rappi_list_payment_methods"
     ],
     gated_cart_writes: ["rappi_add_to_cart", "rappi_update_cart_item", "rappi_clear_cart"],
     gated_pay: ["rappi_place_order", "rappi_set_payment_method"],
