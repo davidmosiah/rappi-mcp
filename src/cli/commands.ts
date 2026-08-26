@@ -4,6 +4,7 @@ import { SERVER_VERSION } from "../constants.js";
 import { peekConfig } from "../services/config.js";
 import { buildConnectionStatus } from "../services/connection-status.js";
 import { TokenStore } from "../services/token-store.js";
+import { normalizeAccessToken } from "../services/auth-token.js";
 
 export async function runCliCommand(args: string[]): Promise<number | undefined> {
   const [command, ...rest] = args;
@@ -52,14 +53,22 @@ async function runSetup(args: string[]): Promise<number> {
 }
 
 async function runAuth(args: string[]): Promise<number> {
+  const headerIdx = args.indexOf("--from-header");
   const idx = args.indexOf("--token");
-  const token = idx >= 0 ? args[idx + 1] : process.env.RAPPI_ACCESS_TOKEN;
+  const raw =
+    headerIdx >= 0
+      ? args[headerIdx + 1]
+      : idx >= 0
+        ? args[idx + 1]
+        : process.env.RAPPI_ACCESS_TOKEN;
+  const token = normalizeAccessToken(raw);
   if (!token || token.startsWith("--")) {
     console.error(`Rappi has no consumer OAuth. Get a token from the website:
 
   1. Open https://www.rappi.com.br and sign in
   2. DevTools → Network → any services.rappi.com.br request
-  3. Copy Authorization (Bearer …) then:
+  3. Copy Authorization then:
+     rappi-mcp-unofficial auth --from-header "Bearer eyJ…"
      rappi-mcp-unofficial auth --token <jwt>
 
 Guest browse (no pay) happens automatically without a token.
@@ -93,7 +102,8 @@ Unofficial local-first Rappi MCP. Never pays unless RAPPI_ALLOW_MUTATIONS and ex
 
 Commands:
   setup [--allow-mutations]   write ~/.rappi-mcp/config.json (0600)
-  auth --token <token>        store personal access token (0600)
+  auth --token <token>              store personal access token (0600)
+  auth --from-header "Bearer …"     same, from DevTools Authorization
   doctor [--json] [--strict]
   version
 

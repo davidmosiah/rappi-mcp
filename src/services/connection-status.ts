@@ -43,8 +43,13 @@ export async function buildConnectionStatus(options: { env?: Env; homeDir?: stri
   const missing: string[] = [];
   if (!exists) missing.push("RAPPI_ACCESS_TOKEN");
   const next: string[] = [];
-  if (!exists) next.push("Run rappi-mcp-unofficial auth --token <personal-access-token> (never commit it).");
-  if (!config.allowMutations) next.push("Reads only. Checkout stays blocked until RAPPI_ALLOW_MUTATIONS=true AND explicit_user_intent.");
+  if (!exists) {
+    next.push("Open https://www.rappi.com.br logged in → DevTools Network → copy Authorization.");
+    next.push("Then rappi-mcp-unofficial auth --from-header \"Bearer …\" or auth --token <jwt> (never commit it).");
+  }
+  if (!config.allowMutations) {
+    next.push("Reads only. Checkout stays blocked until RAPPI_ALLOW_MUTATIONS is enabled AND explicit_user_intent.");
+  }
   if (guest) next.push("Guest token cannot place orders. Replace with a personal token.");
 
   return {

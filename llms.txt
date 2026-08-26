@@ -4,7 +4,7 @@ Unofficial local-first MCP for personal Rappi (Brazil default). Not Partners.
 
 Install:
 - npx -y rappi-mcp-unofficial setup
-- npx -y rappi-mcp-unofficial auth --token <personal-token>
+- npx -y rappi-mcp-unofficial auth --from-header "Bearer …"  (DevTools Authorization)
 - npx -y rappi-mcp-unofficial doctor
 
 Stdio (never set RAPPI_ALLOW_MUTATIONS in the snippet):

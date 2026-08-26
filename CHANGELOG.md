@@ -1,3 +1,27 @@
+## 0.1.5 - 2026-08-26
+
+Ten named OSS improvement rounds (Rappi + iFood):
+
+1. **Rappi** — `auth --from-header` strips DevTools `Authorization: Bearer`.
+2. **iFood** — `doctor --json` reports `unofficial`, `never_pays_by_default`, `auth_methods`.
+3. **Rappi** — host allowlist on `consumerRequestUrl` (country Rappi hosts only).
+4. **iFood** — empty/Bearer-only paste is rejected; token file stays 0600.
+5. **Rappi** — token file mode 0600 asserted after shipped `auth`.
+6. **iFood** — shipped CLI `auth --from-header` stores the raw JWT (no Bearer prefix).
+7. **Rappi** — doctor next steps document DevTools capture; no copyable `RAPPI_ALLOW_MUTATIONS=true`.
+8. **iFood** — `auth complete` without `auth start` fails closed (no pending OTP).
+9. **Rappi** — `doctor --json` via `dist/index.js` asserts unofficial + never-pays.
+10. **iFood** — README first screen: OTP 60s setup + WAF honesty (site-api Cloudflare / search Akamai).
+
+### Added
+
+- `auth --from-header` and `normalizeAccessToken`.
+- Host allowlist for unofficial Rappi country bases.
+
+### Changed
+
+- Doctor tells you how to copy the website JWT. Guest browse still works without one.
+
 ## 0.1.4 - 2026-08-26
 
 ### Added

@@ -10,7 +10,7 @@ import {
 } from "../constants.js";
 import type { FetchLike, RappiConfig, RappiTokenSet } from "../types.js";
 import { TokenStore } from "./token-store.js";
-import { assertAllowedConsumerPath } from "./path-allowlist.js";
+import { assertAllowedConsumerPath, isAllowedRappiHost } from "./path-allowlist.js";
 
 export class RappiClientError extends Error {
   constructor(
@@ -404,7 +404,11 @@ export function consumerRequestUrl(apiBase: string, path: string): string {
   } catch (error) {
     throw new RappiClientError((error as Error).message, undefined, "PATH_NOT_ALLOWED");
   }
-  return apiBase.replace(/\/$/, "") + path;
+  const url = apiBase.replace(/\/$/, "") + path;
+  if (!isAllowedRappiHost(url)) {
+    throw new RappiClientError(`HOST_NOT_ALLOWED: refusing unofficial Rappi host ${apiBase}`, undefined, "PATH_NOT_ALLOWED");
+  }
+  return url;
 }
 
 function addressBody(input: AddressWriteInput): Record<string, unknown> {

@@ -1,4 +1,4 @@
-import { PATHS } from "../constants.js";
+import { COUNTRY_BASES, DEFAULT_API_BASE, PATHS } from "../constants.js";
 
 const PREFIXES = Object.values(PATHS);
 
@@ -11,5 +11,17 @@ export function isAllowedConsumerPath(path: string): boolean {
 export function assertAllowedConsumerPath(path: string): void {
   if (!isAllowedConsumerPath(path)) {
     throw new Error(`PATH_NOT_ALLOWED: refusing unofficial Rappi path ${path}`);
+  }
+}
+
+const ALLOWED_HOSTS = new Set(
+  [DEFAULT_API_BASE, ...Object.values(COUNTRY_BASES)].map((base) => new URL(base).hostname)
+);
+
+export function isAllowedRappiHost(url: string): boolean {
+  try {
+    return ALLOWED_HOSTS.has(new URL(url).hostname);
+  } catch {
+    return false;
   }
 }
