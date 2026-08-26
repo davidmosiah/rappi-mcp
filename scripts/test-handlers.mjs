@@ -97,4 +97,13 @@ assert.equal(guestPay.isError, true);
 assert.match(JSON.stringify(guestPay.structuredContent), /guest/i);
 assert.equal(fetches, 0);
 
+fetches = 0;
+const guestPaymentWrite = await handleSetPaymentMethod(
+  { payment_method_id: "pay-1", explicit_user_intent: true, response_format: "json" },
+  { client: guestClient, tokens: guestTokens, allowMutations: true, fetchImpl }
+);
+assert.equal(guestPaymentWrite.isError, true);
+assert.match(JSON.stringify(guestPaymentWrite.structuredContent), /guest/i);
+assert.equal(fetches, 0, "guest payment write must not hit Rappi");
+
 console.log(JSON.stringify({ ok: true, suite: "handlers", fetches }, null, 2));
