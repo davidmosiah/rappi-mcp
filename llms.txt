@@ -1,0 +1,11 @@
+# rappi-mcp-unofficial
+
+Unofficial local-first MCP for personal Rappi use (Brazil default).
+
+- Install: `npx -y rappi-mcp-unofficial`
+- Auth: `npx -y rappi-mcp-unofficial auth --token <personal-token>`
+- Doctor: `npx -y rappi-mcp-unofficial doctor`
+- Default: read-only. Never pays.
+- To charge: `RAPPI_ALLOW_MUTATIONS=true` AND tool argument `explicit_user_intent: true`.
+- Not Rappi Partners. Consumer web/app surface; unstable.
+- Tokens live in `~/.rappi-mcp/tokens.json` (0600), never in the npm tarball.

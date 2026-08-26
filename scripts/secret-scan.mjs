@@ -1,0 +1,19 @@
+import assert from "node:assert/strict";
+import { readFileSync, existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const root = dirname(fileURLToPath(new URL(".", import.meta.url)));
+const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+const files = pkg.files;
+for (const banned of ["fixtures", ".rappi-mcp", ".env", "tokens.json", "src"]) {
+  assert.equal(files.includes(banned), false, `package files must not include ${banned}`);
+}
+assert.ok(files.includes("dist"));
+assert.ok(files.includes("README.md"));
+assert.equal(existsSync(join(root, "src/services/handlers.ts")), true);
+const handlers = readFileSync(join(root, "src/services/handlers.ts"), "utf8");
+assert.match(handlers, /assertPlaceOrderAllowed/);
+assert.doesNotMatch(handlers, /RAPPI_ACCESS_TOKEN\s*=\s*['"]npm_/);
+
+console.log(JSON.stringify({ ok: true, suite: "secret-scan", files }, null, 2));

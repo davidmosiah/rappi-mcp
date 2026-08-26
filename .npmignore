@@ -1,0 +1,11 @@
+src
+scripts
+fixtures
+docs
+coverage
+tsconfig.json
+.gitignore
+*.log
+.rappi-mcp
+.env
+.env.*

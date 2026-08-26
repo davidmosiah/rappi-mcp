@@ -1,0 +1,22 @@
+{
+  "cart": {
+    "id": "cart-fixture",
+    "store_id": "store-1",
+    "items": [{ "product_id": "sku-leite", "name": "Leite", "quantity": 2, "total": 12.9 }],
+    "subtotal": 12.9,
+    "currency": "BRL"
+  },
+  "profile": {
+    "email": "david@example.com",
+    "phone": "+5585999999999",
+    "street": "Rua das Flores 123",
+    "address": "Rua das Flores 123, Pacatuba",
+    "last_four": "4242",
+    "lastFour": "4242"
+  },
+  "payment": {
+    "brand": "visa",
+    "last_four": "4242",
+    "card_number": "4111111111111111"
+  }
+}

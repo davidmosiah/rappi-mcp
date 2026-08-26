@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "rappi": {
+      "command": "npx",
+      "args": ["-y", "rappi-mcp-unofficial"]
+    }
+  }
+}
