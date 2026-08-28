@@ -18,5 +18,13 @@
     "brand": "visa",
     "last_four": "4242",
     "card_number": "4111111111111111"
+  },
+  "location": {
+    "lat": -3.7319,
+    "lng": -38.5267,
+    "latitude": -3.7319,
+    "longitude": -38.5267,
+    "polyline": "encoded-gps-blob",
+    "gps": "-3.73,-38.52"
   }
 }

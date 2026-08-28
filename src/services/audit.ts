@@ -8,7 +8,7 @@ export function buildPrivacyAudit() {
     mutations_enabled: config.allowMutations,
     secret_env_vars: ["RAPPI_ACCESS_TOKEN"],
     token_path: config.tokenPath,
-    redacts_by_default: ["street", "address", "phone", "email", "last_four"],
+    redacts_by_default: ["street", "address", "phone", "email", "last_four", "lat", "lng", "polyline", "gps"],
     tarball_excludes: [".rappi-mcp/", ".env", "tokens.json"],
     never_pays_by_default: true
   };
