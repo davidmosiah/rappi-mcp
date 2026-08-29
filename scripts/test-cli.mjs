@@ -74,4 +74,14 @@ const emptyStatus = JSON.parse(doctorEmpty.stdout);
 assert.equal(emptyStatus.unofficial, true);
 assert.match(JSON.stringify(emptyStatus.next_steps), /DevTools/);
 
-console.log(JSON.stringify({ ok: true, suite: "cli", from_header: true, token_0600: true, doctor: true }, null, 2));
+const caps = await run(["call", "rappi_capabilities", "--json", "{}"]);
+assert.equal(caps.code, 0, caps.stderr);
+const cap = JSON.parse(caps.stdout);
+assert.equal(cap.unofficial, true);
+assert.equal(cap.never_pays_by_default, true);
+assert.equal(cap.mutations_enabled, false);
+
+const unknown = await run(["call", "rappi_not_a_tool"]);
+assert.equal(unknown.code, 1);
+
+console.log(JSON.stringify({ ok: true, suite: "cli", from_header: true, token_0600: true, doctor: true, call: true }, null, 2));

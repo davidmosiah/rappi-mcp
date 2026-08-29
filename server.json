@@ -6,12 +6,12 @@
     "url": "https://github.com/davidmosiah/rappi-mcp",
     "source": "github"
   },
-  "version": "0.1.6",
+  "version": "0.1.7",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "rappi-mcp-unofficial",
-      "version": "0.1.6",
+      "version": "0.1.7",
       "transport": {
         "type": "stdio"
       },

@@ -1,5 +1,5 @@
 export const SERVER_NAME = "rappi-mcp-server";
-export const SERVER_VERSION = "0.1.6";
+export const SERVER_VERSION = "0.1.7";
 export const NPM_PACKAGE_NAME = "rappi-mcp-unofficial";
 export const PINNED_NPM_PACKAGE = `${NPM_PACKAGE_NAME}@${SERVER_VERSION}`;
 

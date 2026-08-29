@@ -61,6 +61,57 @@ import {
   handleUpdateCartItem,
   handleWebCart
 } from "../services/handlers.js";
+import type { ToolResponse } from "../types.js";
+
+type CallFn = (args: Record<string, unknown>) => Promise<ToolResponse>;
+const call =
+  <T,>(fn: (input: T) => Promise<ToolResponse>): CallFn =>
+  (args) =>
+    fn(args as T);
+
+/** Same handlers as MCP tools — CLI `call` uses this so skill-only clients hit the identical gates. */
+export const TOOL_CALLS: Record<string, CallFn> = {
+  rappi_connection_status: call(handleConnectionStatus),
+  rappi_capabilities: call(handleCapabilities),
+  rappi_privacy_audit: call(handlePrivacyAudit),
+  rappi_search_stores: call(handleSearchStores),
+  rappi_search_products: call(handleSearchProducts),
+  rappi_get_cart: call(handleGetCart),
+  rappi_list_addresses: call(handleListAddresses),
+  rappi_list_orders: call(handleListOrders),
+  rappi_get_order: call(handleGetOrder),
+  rappi_track_order: call(handleTrackOrder),
+  rappi_get_store: call(handleGetStore),
+  rappi_list_payment_methods: call(handleListPaymentMethods),
+  rappi_add_to_cart: call(handleAddToCart),
+  rappi_update_cart_item: call(handleUpdateCartItem),
+  rappi_clear_cart: call(handleClearCart),
+  rappi_set_active_address: call(handleSetActiveAddress),
+  rappi_set_payment_method: call(handleSetPaymentMethod),
+  rappi_place_order: call(handlePlaceOrder),
+  rappi_geocode_address: call(handleGeocodeAddress),
+  rappi_create_address: call(handleCreateAddress),
+  rappi_update_address: call(handleUpdateAddress),
+  rappi_delete_address: call(handleDeleteAddress),
+  rappi_list_active_orders: call(handleListActiveOrders),
+  rappi_get_order_eta: call(handleGetOrderEta),
+  rappi_get_order_receipt: call(handleGetOrderReceipt),
+  rappi_get_order_invoice: call(handleGetOrderInvoice),
+  rappi_get_order_status: call(handleGetOrderStatus),
+  rappi_list_coupons: call(handleListCoupons),
+  rappi_checkout_preview: call(handleCheckoutPreview),
+  rappi_home: call(handleHome),
+  rappi_home_feed: call(handleHomeFeed),
+  rappi_browse_stores: call(handleBrowseStores),
+  rappi_browse_catalog: call(handleBrowseCatalog),
+  rappi_recent_searches: call(handleRecentSearches),
+  rappi_web_cart: call(handleWebCart),
+  rappi_reorder: call(handleReorder),
+  rappi_cancel_order: call(handleCancelOrder),
+  rappi_rate_order: call(handleRateOrder),
+  rappi_tip_order: call(handleTipOrder),
+  rappi_logout: call(handleLogout)
+};
 
 const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true } as const;
 const gatedWrite = { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true } as const;

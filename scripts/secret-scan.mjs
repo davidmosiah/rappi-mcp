@@ -11,6 +11,7 @@ for (const banned of ["fixtures", ".rappi-mcp", ".env", "tokens.json", "src"]) {
 }
 assert.ok(files.includes("dist"));
 assert.ok(files.includes("README.md"));
+assert.ok(files.includes("skill"), "package files must include skill/");
 assert.equal(existsSync(join(root, "src/services/handlers.ts")), true);
 const handlers = readFileSync(join(root, "src/services/handlers.ts"), "utf8");
 assert.match(handlers, /assertPlaceOrderAllowed/);
@@ -21,10 +22,12 @@ for (const rel of [
   "examples/grok-bot.md",
   "README.md",
   "llms.txt",
-  "SECURITY.md"
+  "SECURITY.md",
+  "skill/SKILL.md"
 ]) {
   const text = readFileSync(join(root, rel), "utf8");
   assert.doesNotMatch(text, /RAPPI_ALLOW_MUTATIONS\s*=\s*true/);
 }
+assert.match(readFileSync(join(root, "skill/SKILL.md"), "utf8"), /call rappi_/);
 
 console.log(JSON.stringify({ ok: true, suite: "secret-scan", files }, null, 2));

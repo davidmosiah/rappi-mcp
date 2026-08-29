@@ -7,6 +7,8 @@ Unofficial local-first Rappi MCP. Personal grocery cart for David / Life / Grok 
 - `npm ci`
 - `npm test` (typecheck, build, smoke, mutation gate, redaction, handlers, secret-scan)
 - `npx rappi-mcp-unofficial doctor`
+- `npx rappi-mcp-unofficial call rappi_capabilities --json '{}'`
+- Skill: `skill/SKILL.md` (copy into the agent's skills dir; do not duplicate the API client)
 
 ## Rules
 

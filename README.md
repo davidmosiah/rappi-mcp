@@ -41,6 +41,16 @@ Stdio snippet (Claude Desktop, Cursor, Grok Bot). Do **not** set `RAPPI_ALLOW_MU
 
 See [examples/claude-desktop.json](examples/claude-desktop.json) and [examples/grok-bot.md](examples/grok-bot.md).
 
+## Skill or MCP
+
+Same package, two doors. MCP registers tools on stdio/HTTP. The [skill](skill/SKILL.md) is the workflow (search → compare → stop before checkout) and can drive the **same** tools through the CLI when the client has no MCP:
+
+```bash
+npx -y rappi-mcp-unofficial call rappi_search_stores --json '{"query":"leite"}'
+```
+
+Gates are identical. Copy `skill/SKILL.md` into your agent skills dir (`~/.agents/skills/rappi/` or Claude/Grok equivalent).
+
 ## Tools
 
 | Kind | Tools |
