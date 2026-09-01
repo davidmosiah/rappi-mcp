@@ -139,3 +139,9 @@ export const CheckoutPreviewInputSchema = z.object({
   privacy_mode: PrivacyModeSchema,
   response_format: ResponseFormatSchema
 }).strict();
+
+export const CouponApplyInputSchema = z.object({
+  code: z.string().min(1).max(40),
+  explicit_user_intent: Intent,
+  response_format: ResponseFormatSchema
+}).strict();

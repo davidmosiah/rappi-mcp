@@ -224,6 +224,14 @@ export class RappiClient {
     return this.requestJson("GET", PATHS.coupons, { auth: true });
   }
 
+  async applyCoupon(code: string): Promise<unknown> {
+    return this.requestJson("POST", `${PATHS.coupons}/apply`, { auth: true, body: { code } });
+  }
+
+  async orderChat(orderId: string): Promise<unknown> {
+    return this.requestJson("GET", `${PATHS.orderStatus}/${encodeURIComponent(orderId)}/chat`, { auth: true });
+  }
+
   async checkoutPreview(input: { address_id?: string; payment_method_id?: string } = {}): Promise<unknown> {
     return this.requestJson("POST", PATHS.checkoutPreview, { auth: true, body: input });
   }

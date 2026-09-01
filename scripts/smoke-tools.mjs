@@ -7,6 +7,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 
 const expected = [
   "rappi_add_to_cart",
+  "rappi_apply_coupon",
   "rappi_browse_catalog",
   "rappi_browse_stores",
   "rappi_cancel_order",
@@ -32,6 +33,7 @@ const expected = [
   "rappi_list_orders",
   "rappi_list_payment_methods",
   "rappi_logout",
+  "rappi_order_chat",
   "rappi_place_order",
   "rappi_privacy_audit",
   "rappi_rate_order",

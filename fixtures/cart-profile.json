@@ -26,5 +26,11 @@
     "longitude": -38.5267,
     "polyline": "encoded-gps-blob",
     "gps": "-3.73,-38.52"
+  },
+  "receipt": {
+    "image": "data:image/png;base64,AAA",
+    "base64": "AAA",
+    "pdf": "%PDF-fake",
+    "qr_code": "rappi://receipt"
   }
 }

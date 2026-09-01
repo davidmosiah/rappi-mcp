@@ -78,3 +78,8 @@ export function assertTipAllowed(input: GateInput): void {
 export function assertReorderAllowed(input: GateInput): void {
   assertCartWriteAllowed(input);
 }
+
+export function assertCouponApplyAllowed(input: GateInput): void {
+  assertMutationsEnabled(input.allowMutations, "apply a Rappi coupon");
+  assertExplicitIntent(input.explicitUserIntent, "apply a Rappi coupon");
+}

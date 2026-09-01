@@ -1,3 +1,7 @@
+## 0.1.8 - 2026-09-01
+
+`rappi_apply_coupon` (POST `/coupons/apply`, dual-gated) and `rappi_order_chat` (GET order-status chat, 401 JSON; generic `/api/ms/chat` is 403). Receipt/image/base64/pdf/qr keys redacted. Country bases already in constants (BR/CO/MX/AR/…). OTP-style `auth start` is an honest gap (rocket OTP 404). Tip/cancel/rate remain fail-closed; live home-token proof is an honest gap without a personal token. Unofficial packages are not Top5 scorecard.
+
 ## 0.1.7 - 2026-08-28
 
 Skill layer ships in-package (`skill/SKILL.md`). Agents can use MCP tools **or** `call <tool> --json` on the same binary; mutation gates are identical. Default docs still do not contain a copyable mutations assignment.

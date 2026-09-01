@@ -1,5 +1,5 @@
 const IDENTITY_KEY_PATTERN =
-  /^(street|address|address_line|address_line_1|address_line_2|addressLine|full_address|fullAddress|shipping_address|shippingAddress|phone|phone_number|phoneNumber|mobile|email|e_mail|last_four|lastFour|lastFourDigits|last4|card_last4|cardLast4|cvv|cvc|card_number|cardNumber|pan|lat|lng|latitude|longitude|from_lat|from_lng|to_lat|to_lng|flat|flng|tlat|tlng|polyline|gps|driver_phone|driverPhone|cell)$/i;
+  /^(street|address|address_line|address_line_1|address_line_2|addressLine|full_address|fullAddress|shipping_address|shippingAddress|phone|phone_number|phoneNumber|mobile|email|e_mail|last_four|lastFour|lastFourDigits|last4|card_last4|cardLast4|cvv|cvc|card_number|cardNumber|pan|lat|lng|latitude|longitude|from_lat|from_lng|to_lat|to_lng|flat|flng|tlat|tlng|polyline|gps|driver_phone|driverPhone|cell|image|image_url|imageUrl|imageBase64|base64|pdf|receipt_image|receiptImage|photo|qr_code|qrCode|qr|barcode|thumbnail)$/i;
 
 const SECRET_KEY_PATTERN =
   /^(access[_-]?token|refresh[_-]?token|id[_-]?token|authorization|password|api[_-]?key|client[_-]?secret|bearer)$/i;

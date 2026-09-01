@@ -15,11 +15,13 @@ npx -y rappi-mcp-unofficial call <tool> --json '{...}'
 
 Default: read-only. Never pays.
 Charge only if RAPPI_ALLOW_MUTATIONS is enabled AND explicit_user_intent is true. Guest tokens cannot charge.
-Redacts street, phone, email, last-four.
+Redacts street, phone, email, last-four, GPS, receipt image/base64/pdf/qr.
 
-Read: search/browse (stores, products, catalog, home, feed, recent searches), cart + web cart, addresses + geocode, orders + active + eta/receipt/invoice/status, coupons, checkout preview (no charge).
-Gated cart: rappi_add_to_cart, rappi_update_cart_item, rappi_clear_cart, rappi_reorder.
+Read: search/browse (stores, products, catalog, home, feed, recent searches), cart + web cart, addresses + geocode, orders + active + eta/receipt/invoice/status + courier chat, coupons, checkout preview (no charge).
+Gated cart: rappi_add_to_cart, rappi_update_cart_item, rappi_clear_cart, rappi_reorder, rappi_apply_coupon.
 Gated pay: rappi_place_order, rappi_set_payment_method, rappi_cancel_order, rappi_tip_order.
 Intent only: logout, address create/update/delete/select, rappi_rate_order.
+Country: RAPPI_COUNTRY BR (default) CO MX AR CL PE UY EC CR.
+OTP auth start is not shipped (rocket OTP 404). Not a Top5 wellness scorecard package.
 
 HTTP optional: loopback 127.0.0.1 + Origin allowlist. Tokens in ~/.rappi-mcp/tokens.json (0600), never in git/tarball.

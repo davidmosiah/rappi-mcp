@@ -6,6 +6,7 @@ import {
   CartWriteInputSchema,
   CheckoutPreviewInputSchema,
   ClearCartInputSchema,
+  CouponApplyInputSchema,
   GeoInputSchema,
   LogoutInputSchema,
   OrderIdInputSchema,
@@ -21,6 +22,7 @@ import {
 } from "../schemas/common.js";
 import {
   handleAddToCart,
+  handleApplyCoupon,
   handleBrowseCatalog,
   handleBrowseStores,
   handleCancelOrder,
@@ -46,6 +48,7 @@ import {
   handleListOrders,
   handleListPaymentMethods,
   handleLogout,
+  handleOrderChat,
   handlePlaceOrder,
   handlePrivacyAudit,
   handleRateOrder,
@@ -99,6 +102,8 @@ export const TOOL_CALLS: Record<string, CallFn> = {
   rappi_get_order_invoice: call(handleGetOrderInvoice),
   rappi_get_order_status: call(handleGetOrderStatus),
   rappi_list_coupons: call(handleListCoupons),
+  rappi_apply_coupon: call(handleApplyCoupon),
+  rappi_order_chat: call(handleOrderChat),
   rappi_checkout_preview: call(handleCheckoutPreview),
   rappi_home: call(handleHome),
   rappi_home_feed: call(handleHomeFeed),
@@ -427,6 +432,29 @@ export function registerRappiTools(server: McpServer): void {
       annotations: readOnly
     },
     async (args) => handleListCoupons(args)
+  );
+
+  server.registerTool(
+    "rappi_apply_coupon",
+    {
+      title: "Apply Rappi coupon",
+      description: "POST /api/user-order-home/coupons/apply (401 JSON no token). Dual-gated. Does not checkout.",
+      inputSchema: CouponApplyInputSchema.shape,
+      annotations: gatedWrite
+    },
+    async (args) => handleApplyCoupon(args)
+  );
+
+  server.registerTool(
+    "rappi_order_chat",
+    {
+      title: "Read Rappi courier chat",
+      description:
+        "GET /api/ms/order-status/v1/orders/:id/chat (401 JSON). Generic /api/ms/chat is 403 PATH_NOT_ALLOWED. Read-only, redacted.",
+      inputSchema: OrderIdInputSchema.shape,
+      annotations: readOnly
+    },
+    async (args) => handleOrderChat(args)
   );
 
   server.registerTool(

@@ -7,6 +7,7 @@ import { RappiClient } from "../dist/services/rappi-client.js";
 import { peekConfig } from "../dist/services/config.js";
 import {
   handleAddToCart,
+  handleApplyCoupon,
   handleCancelOrder,
   handleCreateAddress,
   handleLogout,
@@ -133,6 +134,22 @@ const guestTip = await handleTipOrder(
 );
 assert.equal(guestTip.isError, true);
 assert.match(JSON.stringify(guestTip.structuredContent), /guest/i);
+assert.equal(fetches, 0);
+
+fetches = 0;
+const deniedCoupon = await handleApplyCoupon(
+  { code: "PROBE", explicit_user_intent: true, response_format: "json" },
+  { client, tokens, allowMutations: false, fetchImpl }
+);
+assert.equal(deniedCoupon.isError, true);
+assert.equal(fetches, 0);
+
+fetches = 0;
+const deniedCouponIntent = await handleApplyCoupon(
+  { code: "PROBE", explicit_user_intent: false, response_format: "json" },
+  { client, tokens, allowMutations: true, fetchImpl }
+);
+assert.equal(deniedCouponIntent.isError, true);
 assert.equal(fetches, 0);
 
 fetches = 0;

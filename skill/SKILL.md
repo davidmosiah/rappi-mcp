@@ -46,8 +46,9 @@ Token is a captured `Authorization` from `services.rappi.com.br`, stored at `~/.
 ## Loop
 
 1. `rappi_connection_status` (or `doctor --json`). Expect `unofficial` and `never_pays_by_default`.
-2. Search / home / cart / orders as asked. Street, phone, GPS stay redacted.
-3. **Stop before pay.** Do not call `rappi_place_order` (or other gated pay/cart writes) unless the user clearly asked to place **this** order. If the tool returns `USER_ACTION_REQUIRED`, report that and stop. Do not invent env flags.
+2. Search / home / cart / orders as asked. Street, phone, GPS, receipt images stay redacted.
+3. “O que tem no carrinho?” → `rappi_get_cart`. “Pedir o de sempre” → `rappi_list_orders` then `rappi_checkout_preview`, **stop**. `rappi_reorder` only if the user named that order and both gates are already on.
+4. **Stop before pay.** Do not call `rappi_place_order` (or other gated pay/cart writes) unless the user clearly asked to place **this** order. If the tool returns `USER_ACTION_REQUIRED`, report that and stop. Do not invent env flags.
 
 ## Never
 

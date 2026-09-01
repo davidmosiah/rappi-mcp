@@ -14,6 +14,7 @@ import {
   assertNotGuestForCharge,
   assertPaymentWriteAllowed,
   assertPlaceOrderAllowed,
+  assertCouponApplyAllowed,
   assertReorderAllowed,
   assertTipAllowed
 } from "./mutation-gate.js";
@@ -529,6 +530,37 @@ export async function handleGetOrderStatus(
     const raw = await client.getOrderStatus(input.order_id);
     const payload = applyPrivacy({ unofficial: true, status: raw }, input.privacy_mode ?? config.privacyMode);
     return wrap(payload, input.response_format ?? "markdown", "Rappi order status", { order_id: input.order_id });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleApplyCoupon(
+  input: { code: string; explicit_user_intent?: boolean; response_format?: ResponseFormat },
+  extra: HandlerDeps = {}
+) {
+  const { allowMutations, client } = deps(extra);
+  try {
+    assertCouponApplyAllowed({ allowMutations, explicitUserIntent: input.explicit_user_intent });
+    const raw = await client.applyCoupon(input.code);
+    return wrap({ ok: true, coupon: raw }, input.response_format ?? "markdown", "Rappi coupon applied", { ok: true });
+  } catch (error) {
+    return gateError(error);
+  }
+}
+
+export async function handleOrderChat(
+  input: { order_id: string; privacy_mode?: PrivacyMode; response_format?: ResponseFormat },
+  extra: HandlerDeps = {}
+) {
+  const { config, client } = deps(extra);
+  try {
+    const raw = await client.orderChat(input.order_id);
+    const payload = applyPrivacy({ unofficial: true, chat: raw }, input.privacy_mode ?? config.privacyMode);
+    return wrap(payload, input.response_format ?? "markdown", "Rappi courier chat", {
+      unofficial: true,
+      redacted: true
+    });
   } catch (error) {
     return gateError(error);
   }

@@ -24,6 +24,10 @@ assert.equal(structured.location.latitude, REDACTED);
 assert.equal(structured.location.longitude, REDACTED);
 assert.equal(structured.location.polyline, REDACTED);
 assert.equal(structured.location.gps, REDACTED);
+assert.equal(structured.receipt.image, REDACTED);
+assert.equal(structured.receipt.base64, REDACTED);
+assert.equal(structured.receipt.pdf, REDACTED);
+assert.equal(structured.receipt.qr_code, REDACTED);
 
 const identity = redactIdentity(fixture);
 assert.equal(identity.payment.card_number, REDACTED);
