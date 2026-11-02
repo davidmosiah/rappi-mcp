@@ -1,3 +1,4 @@
+import { assertToolInputBudget } from "../services/tool-input-budget.js";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   AddressCreateInputSchema,
@@ -68,54 +69,58 @@ import type { ToolResponse } from "../types.js";
 
 type CallFn = (args: Record<string, unknown>) => Promise<ToolResponse>;
 const call =
-  <T,>(fn: (input: T) => Promise<ToolResponse>): CallFn =>
-  (args) =>
-    fn(args as T);
+  <T,>(schema: { safeParse(input: unknown): { success: true; data: T } | { success: false } }, fn: (input: T) => Promise<ToolResponse>): CallFn =>
+  async (args) => {
+    assertToolInputBudget(args);
+    const parsed = schema.safeParse(args);
+    if (!parsed.success) throw new Error("INVALID_INPUT: arguments do not match the tool schema");
+    return fn(parsed.data);
+  };
 
 /** Same handlers as MCP tools — CLI `call` uses this so skill-only clients hit the identical gates. */
 export const TOOL_CALLS: Record<string, CallFn> = {
-  rappi_connection_status: call(handleConnectionStatus),
-  rappi_capabilities: call(handleCapabilities),
-  rappi_privacy_audit: call(handlePrivacyAudit),
-  rappi_search_stores: call(handleSearchStores),
-  rappi_search_products: call(handleSearchProducts),
-  rappi_get_cart: call(handleGetCart),
-  rappi_list_addresses: call(handleListAddresses),
-  rappi_list_orders: call(handleListOrders),
-  rappi_get_order: call(handleGetOrder),
-  rappi_track_order: call(handleTrackOrder),
-  rappi_get_store: call(handleGetStore),
-  rappi_list_payment_methods: call(handleListPaymentMethods),
-  rappi_add_to_cart: call(handleAddToCart),
-  rappi_update_cart_item: call(handleUpdateCartItem),
-  rappi_clear_cart: call(handleClearCart),
-  rappi_set_active_address: call(handleSetActiveAddress),
-  rappi_set_payment_method: call(handleSetPaymentMethod),
-  rappi_place_order: call(handlePlaceOrder),
-  rappi_geocode_address: call(handleGeocodeAddress),
-  rappi_create_address: call(handleCreateAddress),
-  rappi_update_address: call(handleUpdateAddress),
-  rappi_delete_address: call(handleDeleteAddress),
-  rappi_list_active_orders: call(handleListActiveOrders),
-  rappi_get_order_eta: call(handleGetOrderEta),
-  rappi_get_order_receipt: call(handleGetOrderReceipt),
-  rappi_get_order_invoice: call(handleGetOrderInvoice),
-  rappi_get_order_status: call(handleGetOrderStatus),
-  rappi_list_coupons: call(handleListCoupons),
-  rappi_apply_coupon: call(handleApplyCoupon),
-  rappi_order_chat: call(handleOrderChat),
-  rappi_checkout_preview: call(handleCheckoutPreview),
-  rappi_home: call(handleHome),
-  rappi_home_feed: call(handleHomeFeed),
-  rappi_browse_stores: call(handleBrowseStores),
-  rappi_browse_catalog: call(handleBrowseCatalog),
-  rappi_recent_searches: call(handleRecentSearches),
-  rappi_web_cart: call(handleWebCart),
-  rappi_reorder: call(handleReorder),
-  rappi_cancel_order: call(handleCancelOrder),
-  rappi_rate_order: call(handleRateOrder),
-  rappi_tip_order: call(handleTipOrder),
-  rappi_logout: call(handleLogout)
+  rappi_connection_status: call(ResponseOnlyInputSchema, handleConnectionStatus),
+  rappi_capabilities: call(ResponseOnlyInputSchema, handleCapabilities),
+  rappi_privacy_audit: call(ResponseOnlyInputSchema, handlePrivacyAudit),
+  rappi_search_stores: call(SearchInputSchema, handleSearchStores),
+  rappi_search_products: call(SearchInputSchema, handleSearchProducts),
+  rappi_get_cart: call(ReadInputSchema, handleGetCart),
+  rappi_list_addresses: call(ReadInputSchema, handleListAddresses),
+  rappi_list_orders: call(ReadInputSchema, handleListOrders),
+  rappi_get_order: call(OrderIdInputSchema, handleGetOrder),
+  rappi_track_order: call(OrderIdInputSchema, handleTrackOrder),
+  rappi_get_store: call(StoreIdInputSchema, handleGetStore),
+  rappi_list_payment_methods: call(ReadInputSchema, handleListPaymentMethods),
+  rappi_add_to_cart: call(CartWriteInputSchema, handleAddToCart),
+  rappi_update_cart_item: call(CartWriteInputSchema, handleUpdateCartItem),
+  rappi_clear_cart: call(ClearCartInputSchema, handleClearCart),
+  rappi_set_active_address: call(AddressWriteInputSchema, handleSetActiveAddress),
+  rappi_set_payment_method: call(PaymentWriteInputSchema, handleSetPaymentMethod),
+  rappi_place_order: call(PlaceOrderInputSchema, handlePlaceOrder),
+  rappi_geocode_address: call(GeoInputSchema, handleGeocodeAddress),
+  rappi_create_address: call(AddressCreateInputSchema, handleCreateAddress),
+  rappi_update_address: call(AddressUpdateInputSchema, handleUpdateAddress),
+  rappi_delete_address: call(AddressWriteInputSchema, handleDeleteAddress),
+  rappi_list_active_orders: call(ReadInputSchema, handleListActiveOrders),
+  rappi_get_order_eta: call(OrderIdInputSchema, handleGetOrderEta),
+  rappi_get_order_receipt: call(OrderIdInputSchema, handleGetOrderReceipt),
+  rappi_get_order_invoice: call(OrderIdInputSchema, handleGetOrderInvoice),
+  rappi_get_order_status: call(OrderIdInputSchema, handleGetOrderStatus),
+  rappi_list_coupons: call(ReadInputSchema, handleListCoupons),
+  rappi_apply_coupon: call(CouponApplyInputSchema, handleApplyCoupon),
+  rappi_order_chat: call(OrderIdInputSchema, handleOrderChat),
+  rappi_checkout_preview: call(CheckoutPreviewInputSchema, handleCheckoutPreview),
+  rappi_home: call(ReadInputSchema, handleHome),
+  rappi_home_feed: call(ReadInputSchema, handleHomeFeed),
+  rappi_browse_stores: call(ReadInputSchema, handleBrowseStores),
+  rappi_browse_catalog: call(SearchInputSchema, handleBrowseCatalog),
+  rappi_recent_searches: call(GeoInputSchema, handleRecentSearches),
+  rappi_web_cart: call(ReadInputSchema, handleWebCart),
+  rappi_reorder: call(OrderWriteInputSchema, handleReorder),
+  rappi_cancel_order: call(OrderWriteInputSchema, handleCancelOrder),
+  rappi_rate_order: call(RateOrderInputSchema, handleRateOrder),
+  rappi_tip_order: call(TipOrderInputSchema, handleTipOrder),
+  rappi_logout: call(LogoutInputSchema, handleLogout)
 };
 
 const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true } as const;

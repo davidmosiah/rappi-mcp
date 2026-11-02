@@ -34,3 +34,9 @@ The HTTP client only calls allowlisted unofficial consumer paths (search, cart, 
 ## Unofficial surface
 
 Rappi does not publish a consumer cart API. This package talks to the same undocumented web/app endpoints (`services.rappi.com.br` by default). They can change without notice. This is **not** the Rappi Partners restaurant OAuth API.
+
+## Consumer transport restrictions
+
+API-base overrides must be bare HTTPS origins on the provider allowlist and default port 443, without URL credentials, query, or fragment. Redirects fail closed rather than forwarding requests outside the reviewed origin/path. For the 99 passenger connector specifically, this also protects ticket/token body credentials on 307/308 redirects. Overrides are local configuration, not agent input.
+
+CLI tool calls validate the shared field/type/default schemas before handlers. CLI unknown fields are now rejected (the MCP SDK may strip them), so error behavior is intentionally stricter, with a 10,000-element argument budget and 1 MiB JSON text cap. Provider responses are limited to 4 MiB of decoded bytes, including streams without trustworthy Content-Length; over-limit or aborted readers are cancelled.
