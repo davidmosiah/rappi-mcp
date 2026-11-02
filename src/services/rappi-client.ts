@@ -1,3 +1,4 @@
+import { readResponseText, ResponseBodyError } from "./response-body.js";
 import { randomUUID } from "node:crypto";
 import { dirname } from "node:path";
 import { promises as fs } from "node:fs";
@@ -376,9 +377,10 @@ export class RappiClient {
         method,
         headers,
         body: options.body === undefined || method === "GET" || method === "DELETE" ? undefined : JSON.stringify(options.body),
+        redirect: "error",
         signal: controller.signal
       });
-      const text = await response.text();
+      const text = await readResponseText(response, controller.signal);
       let parsed: unknown = text;
       try {
         parsed = text ? JSON.parse(text) : null;
@@ -396,7 +398,7 @@ export class RappiClient {
     } catch (error) {
       if (error instanceof RappiClientError) throw error;
       throw new RappiClientError(
-        `Rappi request failed: ${(error as Error).message}`,
+        error instanceof ResponseBodyError ? error.message : "Rappi request failed",
         undefined,
         "RAPPI_UPSTREAM_UNAVAILABLE"
       );
@@ -409,12 +411,16 @@ export class RappiClient {
 export function consumerRequestUrl(apiBase: string, path: string): string {
   try {
     assertAllowedConsumerPath(path);
+    const base = new URL(apiBase);
+    if (base.pathname !== "/" || base.search || base.hash) {
+      throw new Error("PATH_NOT_ALLOWED: API base must be a bare HTTPS origin");
+    }
   } catch (error) {
     throw new RappiClientError((error as Error).message, undefined, "PATH_NOT_ALLOWED");
   }
   const url = apiBase.replace(/\/$/, "") + path;
   if (!isAllowedRappiHost(url)) {
-    throw new RappiClientError(`HOST_NOT_ALLOWED: refusing unofficial Rappi host ${apiBase}`, undefined, "PATH_NOT_ALLOWED");
+    throw new RappiClientError("HOST_NOT_ALLOWED: consumer base must use an allowed HTTPS origin", undefined, "PATH_NOT_ALLOWED");
   }
   return url;
 }
